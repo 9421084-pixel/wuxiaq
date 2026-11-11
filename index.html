@@ -3284,6 +3284,9 @@ function neiliScene(b,done){qyLoad().then(()=>{const N=b.nl,A=QY.A,AW=QY.AW,AH=Q
   set('leftNeiliBar',LN?Math.min(1,t/LN):1);qx('leftNeiliText',t>LN);qx('rightNeiliText',t>RN);set('leftQixueBar',t<=LN?0:(LT-LN?(t-LN)/(LT-LN):1));set('rightNeiliBar',RN?Math.min(1,t/RN):1);set('rightQixueBar',t<=RN?0:(RT-RN?(t-RN)/(RT-RN):1))};bars(0);
  T(()=>{const t0=performance.now();const loop=()=>{if(fin)return;const t=Math.min(TM,performance.now()-t0);bars(t);if(t<TM)raf=requestAnimationFrame(loop);else end()};raf=requestAnimationFrame(loop)},2900);
  const end=()=>{sfx('neiliend');const fl=Q('.nlflash');fl.style.transition='none';fl.style.opacity='1';requestAnimationFrame(()=>{fl.style.transition='opacity .7s';fl.style.opacity='0'});Q('.nlball').style.opacity='0';
+  if(b.ftue){/* 使用者指定：開場的決戰回合比完內力後雙方都被震飛出去、畫面變暗，直接接老掌門交接的動畫（不顯示勝利／失敗） */
+   R.querySelectorAll('.nlfig').forEach((e,j)=>{const rt=+e.dataset.r,dx=rt?620:-620,dy=-160-((j*37)%90),rot=rt?540:-540;e.style.transition='transform 1.3s cubic-bezier(.15,.55,.35,1),opacity .5s .9s';requestAnimationFrame(()=>{e.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)${rt?'':' scaleX(-1)'}`;e.style.opacity='0'})});
+   const dk=document.createElement('div');dk.className='qa';dk.style.cssText='left:0;top:0;width:960px;height:640px;background:#000;opacity:0;pointer-events:none;z-index:50;transition:opacity 1s';R.appendChild(dk);T(()=>{dk.style.opacity='1'},1000);T(close,2300);return}
   R.querySelectorAll('.nlfig').forEach(e=>{const lose=(+e.dataset.r)===(N.win?1:0);if(lose)e.style.filter='grayscale(1) brightness(.6)'});
   const fc=R.querySelectorAll('.nlfc');const lf=fc[N.win?1:0];if(lf)lf.style.filter='grayscale(1)';const res=Q('.nlres');res.style.transition='opacity .3s';res.style.opacity='1';T(close,1800)};
  const close=()=>{if(fin)return;fin=true;tms.forEach(clearTimeout);cancelAnimationFrame(raf);clearInterval(figT);ov.remove();done()};
@@ -5987,11 +5990,11 @@ function drawCtl(c,Z,t){if(!busy&&!(last&&last.b&&!last.done))return;const A=QY&
  // 按下回饋：點到的按鈕 0.18 秒內縮小（原作 CCMenuItem 按下縮放）
  const prs=k=>CTL.pk===k&&performance.now()-CTL.pt<180,pz=(k,f)=>{if(!prs(k)){f();return}c.save();c.filter='brightness(.75)';const cx=k.x+k.w/2,cy=k.y+k.h/2;c.translate(cx,cy);c.scale(.92,.92);c.translate(-cx,-cy);f();c.restore()};
  const BI=n=>{const m=img('a/ui/'+n+'.webp');return m.complete&&m.naturalWidth?m:null},bimg=(k,m)=>{const h=k.w*m.naturalHeight/m.naturalWidth;c.drawImage(m,k.x,k.y+k.h/2-h/2,k.w,h)};
- const on=SPD>1,P=CTL.sp;pz(P,()=>{const mi=BI('btn_spd');if(mi){bimg(P,mi);if(on)liText(c,`×${SPD}`,P.x+P.w-34,P.y+P.h/2+1,20,'#ffd24a','center','#3a1a08',4);return}btn(P,0);{const g=goldTxt(on?`加速×${SPD}`:'加速'),ta=A&&A.art_font_btn_tiaoguo,th=ta?ta[3]:32;if(g){const bb=gtBox(g),sc=th*.74/bb.h,w=g.width*sc,h=g.height*sc;c.drawImage(g,P.x+P.w/2-(bb.x+bb.w/2)*sc,P.y+P.h/2-(bb.y+bb.h/2)*sc,w,h)}else liText(c,on?`加速 ×${SPD}`:'加速',P.x+P.w/2,P.y+P.h/2+2,24,on?'#ffd24a':'#fff6dc','center','#3a1a08',4)}});
+ const on=SPD>1,P=CTL.sp;if(!(EVB&&EVB.kind==='ftue'))pz(P,()=>{const mi=BI('btn_spd');if(mi){bimg(P,mi);if(on)liText(c,`×${SPD}`,P.x+P.w-34,P.y+P.h/2+1,20,'#ffd24a','center','#3a1a08',4);return}btn(P,0);{const g=goldTxt(on?`加速×${SPD}`:'加速'),ta=A&&A.art_font_btn_tiaoguo,th=ta?ta[3]:32;if(g){const bb=gtBox(g),sc=th*.74/bb.h,w=g.width*sc,h=g.height*sc;c.drawImage(g,P.x+P.w/2-(bb.x+bb.w/2)*sc,P.y+P.h/2-(bb.y+bb.h/2)*sc,w,h)}else liText(c,on?`加速 ×${SPD}`:'加速',P.x+P.w/2,P.y+P.h/2+2,24,on?'#ffd24a':'#fff6dc','center','#3a1a08',4)}});
  if(busy&&canSkip()){const s3=1,k=CTL.sk;pz(k,()=>{{const mi=BI('btn_skip');if(mi){bimg(k,mi);return}}btn(k,!s3);c.save();c.globalAlpha=s3?1:.55;const a=A&&A.art_font_btn_tiaoguo,gg=ok&&goldTxt('跳過');if(gg&&gtBox(gg).w>40){const th=a?a[3]:32,bb=gtBox(gg),sc=th*.74/bb.h;c.drawImage(gg,k.x+k.w/2-(bb.x+bb.w/2)*sc,k.y+k.h/2-(bb.y+bb.h/2)*sc,gg.width*sc,gg.height*sc)}else if(a&&ok)sp('art_font_btn_tiaoguo',k.x+k.w/2-a[2]/2,k.y+k.h/2-a[3]/2);else liText(c,'跳過',k.x+k.w/2,k.y+k.h/2,24,'#fff6dc','center','#3a1a08',4);c.restore()});
   }}
 function ctlClick(e){if(SC&&SC.sb){SC.sb.next();return}const cv=e.currentTarget,R=cv.getBoundingClientRect(),q=ctlS(cv),x=CW-(CW-(e.clientX-R.left)*CW/R.width)/q,y=CH-(CH-(e.clientY-R.top)*CH/R.height)/q;
- if(!(busy||(last&&last.b&&!last.done)))return;const P=CTL.sp;if(x>=P.x&&x<=P.x+P.w&&y>=P.y&&y<=P.y+P.h){CTL.pk=P;CTL.pt=performance.now();sfx('button');spdNext();toast(SPD>1?`戰鬥加速 ×${SPD}`:'戰鬥速度：正常');return}
+ if(!(busy||(last&&last.b&&!last.done)))return;const P=CTL.sp;if(!(EVB&&EVB.kind==='ftue')&&x>=P.x&&x<=P.x+P.w&&y>=P.y&&y<=P.y+P.h){CTL.pk=P;CTL.pt=performance.now();sfx('button');spdNext();toast(SPD>1?`戰鬥加速 ×${SPD}`:'戰鬥速度：正常');return}
  const k=CTL.sk;if(busy&&canSkip()&&x>=k.x&&x<=k.x+k.w&&y>=k.y&&y<=k.y+k.h){CTL.pk=k;CTL.pt=performance.now();sfx('button');setTimeout(()=>{SKIP=true},150)}}
 function drawHUD(c,Z,t){const I=n=>img('a/ui/fight/'+n+'.png'),ok=(...a)=>a.every(i=>i.complete&&i.naturalWidth);const P=I('plate'),B=I('bar'),R=I('ring'),Q=I('ball'),NB=I('nb'),NF=I('nbf'),CZ=I('czh'),AR=I('arr');
  if(!ok(P,B,R,Q,NB,NF,CZ,AR))return;const cx=CW/2,mm=Z.meta;
@@ -7781,7 +7784,7 @@ let MOVIE=false;function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e
 //  → 劇情 EXDA002 → 決戰回合（NewNeiliScene，ftueNeili.json：峨眉／少林／武當掌門與掌門師傅 對 西方不敗，內力 300/500、500/300）→ 播 episode3（師父遺言）
 // 角色名照原作 ftueHeroes（str_F00x_name），圖用 assetId；決戰回合的少林掌門原檔為 VA124（敵人專用圖，本版沒有），改用同為少林掌門的 VA001（本版推定）
 let FTUE=false;
-function ftueIntro(done){if(!D||!HM.HB211){done();return}FTUE=true;busy=true;SKIP=false;try{bgmUpdate()}catch(e){}const app=document.getElementById('app');
+function ftueIntro(done){if(!D||!HM.HB211){done();return}FTUE=true;busy=true;SKIP=false;const SPD0=SPD;SPD=1;try{bgmUpdate()}catch(e){}const app=document.getElementById('app');
  const FH=[['少林掌門','VA001',5000],['掌門師傅','HB211',5000],['泰山掌門','HC217',3000],['峨眉掌門','HB207',3000],['崆峒掌門','HC209',1500],['武當掌門','HC222',3000],['衡山掌門','HB205',1500]];
  const mk=(n,h,mx,side,i,sl)=>({name:n,h,hp:mx,max:mx,atk:1,dp:0,spd:1,side,row:1,i,sl,np:20,lvl:1,sid:null});
  const A=FH.map((x,i)=>mk(x[0],x[1],x[2],0,i,i)),E=[mk('西方不敗','HA001',5000,1,7,1)];E[0].big=0;const U=[...A,...E];
@@ -7790,10 +7793,10 @@ function ftueIntro(done){if(!D||!HM.HB211){done();return}FTUE=true;busy=true;SKI
  const b={A,E,steps,win:1};EVB={kind:'ftue',b,done:null};
  app.innerHTML=`<div class="card qyb">${canvasTag}<div id="log"></div></div>`;scene(b,'bg_guangmingding',{l:'武林正派',r:'魔教教主'});
  const talk=(L,go)=>{const Z=SC;if(!Z){go();return}let tm=null;const B=Z.sb={lines:L.map(([sd,k,t])=>['',t,Z.m[sd==='L'?k-1:A.length]]),i:0,t:now(),next:()=>{clearTimeout(tm);B.i++;B.t=now();if(B.i>=B.lines.length){Z.sb=null;go()}else tm=setTimeout(B.next,3500)}};tm=setTimeout(B.next,3500)};
- const fin=()=>{FTUE=false;busy=false;EVB=null;SC=null;done()};
+ const fin=()=>{FTUE=false;busy=false;EVB=null;SC=null;SPD=SPD0;done()};
  talk([['L',2,'妖女，多行不義必自斃，你若就此投降，我們或許還可饒你一命。'],['R',2,'哼，最恨你們這些自稱正道的傢夥，真是虛偽之極。'],['L',6,'師叔，這等邪魔歪道，何必跟她費話。'],['L',1,'阿彌陀佛，除魔衛道，咱們就出手為武林除去此害吧。'],['R',2,'就憑你們這些不如流的功夫，接我一掌試試！']],()=>{
   playBattle(b,()=>{SKIP=false;talk([['L',4,'各位，這妖女武功實在太高，咱們也不必跟她講什麼江湖規矩，一起上吧！'],['R',2,'你們這些偽君子還提什麼江湖規矩，當真不害躁！']],()=>{
-   neiliScene({nl:{A:[{h:'HB207',mp:1},{h:'VA001',mp:2},{h:'HC222',mp:3},{h:'HB211',mp:4}],E:[{h:'HA001',mp:9}],nA:[300,500],nE:[500,300],win:1},noSkip:1},fin)})})})}
+   neiliScene({nl:{A:[{h:'HB207',mp:1},{h:'VA001',mp:2},{h:'HC222',mp:3},{h:'HB211',mp:4}],E:[{h:'HA001',mp:9}],nA:[300,500],nE:[500,300],win:1},noSkip:1,ftue:1},fin)})})})}
 // 本版：主畫面按鈕依目前開放的功能緊密排列（右側直排貼近收縮鍵由下往上、底部橫排由右往左），收縮時往收縮鍵收起
 function hbCompact(){const A=document.getElementById('app');if(!A||!A.querySelector('.hmenu'))return;const q=k=>A.querySelector(`.hb[data-home="${k}"]`);
  const col=['xn','lj','jh2','qy'].map(q).filter(Boolean),T=[404,312,220,128];col.forEach((e,i)=>{e.style.top=T[i]+'px';e.classList.add('hgrp');e.style.setProperty('--dy',(500-T[i])+'px')});
