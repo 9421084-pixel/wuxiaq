@@ -451,6 +451,7 @@ body.mob nav{margin-bottom:4px;gap:3px}
 body.mob nav button{padding:3px 4px;min-height:0;font-size:12px}
 body.mob canvas{width:auto;max-width:100%;max-height:calc(100vh - 44px);margin:2px auto 0}
 body.mob .tip,body.mob p.mut.tip{display:none}
+/* 手機橫放：彈出視窗依螢幕高度縮放，整個 960×640 畫面都放得進螢幕（跟原版手機上看到的比例相同） */body.mob .bzp{padding:3px;border-width:2px}body.mob .bzb{padding:4px;margin-top:3px}body.mob:not(.mobp) .qypop .scl,body.mob:not(.mobp) .hiov>.scl{width:min(960px,calc(100vw - 8px),calc(100vh * 1.5))!important}
 body.mob .card{padding:4px;margin-bottom:4px}
 .mobrot{display:none}
 body.mobp .mobrot{display:flex;position:fixed;inset:0;z-index:99999;background:rgba(10,6,2,.94);color:#f3e6c8;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-size:20px;text-align:center;padding:24px}
@@ -7225,7 +7226,7 @@ function fitOv(ov){try{const app=document.getElementById('app');if(!app||!ov)ret
 new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1&&n.classList&&n.classList.contains('hiov'))fitOv(n)}))).observe(document.body,{childList:true});
 addEventListener('resize',()=>document.querySelectorAll('.hiov').forEach(fitOv));
 function layoutScl(){mobChk();document.querySelectorAll('.scl').forEach(e=>{const w=+e.dataset.w,i=e.firstElementChild,h=e.dataset.h==='auto'?i.offsetHeight:+e.dataset.h;let k=e.clientWidth/w,ox=0;
- if(MOB()&&!e.closest('.qypop')&&!e.closest('.hiov')){const dz=e.closest('.dz');if(dz)dz.style.maxWidth='';const top=e.getBoundingClientRect().top+scrollY,k2=Math.max(k*.45,(innerHeight-top-6)/h);if(k2<k){if(dz){dz.style.maxWidth=Math.round(w*k2+(dz.offsetWidth-e.clientWidth))+'px';k=e.clientWidth/w}else{ox=(e.clientWidth-w*k2)/2;k=k2}}}
+ if(MOB()&&!e.closest('.qypop')&&!e.closest('.hiov')){const dz=e.closest('.dz');if(dz)dz.style.maxWidth='';const top=e.getBoundingClientRect().top+scrollY,k2=Math.max(k*.45,(innerHeight-top-(e.closest('.bzp')?18:6))/h);if(k2<k){if(dz){dz.style.maxWidth=Math.round(w*k2+(dz.offsetWidth-e.clientWidth))+'px';k=e.clientWidth/w}else{ox=(e.clientWidth-w*k2)/2;k=k2}}}
  i.style.transform=`translateX(${ox}px) scale(${k})`;e.style.height=Math.round(h*k)+'px'})}
 function layoutHome(){layoutScl();const H=document.getElementById('home'),I=document.getElementById('homei');if(!H||!I)return;const cw=H.clientWidth;let Wl=Math.max(600,Math.min(960,cw/.62)),k=cw/Wl,ox=0;if(MOB()){Wl=960;const nv=document.querySelector('nav'),av=innerHeight-(nv?nv.getBoundingClientRect().height:0);k=Math.min(cw/960,av/640);ox=(cw-960*k)/2}H.classList.toggle('narrow',Wl<820);I.style.width=Wl+'px';I.style.transform=`translateX(${ox}px) scale(${k})`;H.style.height=Math.round(640*k)+'px'}
 window.addEventListener('resize',()=>layoutHome());window.addEventListener('orientationchange',()=>setTimeout(layoutHome,300));
