@@ -3281,15 +3281,21 @@ function neiliScene(b,done){qyLoad().then(()=>{const N=b.nl,A=QY.A,AW=QY.AW,AH=Q
  T(()=>{const e=Q('.nlse');e.style.opacity='1';e.style.transition='opacity .6s .3s';requestAnimationFrame(()=>e.style.opacity='0');const fl=Q('.nlflash');fl.style.transition='none';fl.style.opacity='.8';requestAnimationFrame(()=>{fl.style.transition='opacity .5s';fl.style.opacity='0'})},2500);
  fade('.nlball',2700,.3);T(()=>sfx('neililoop'),2600);
  // 內力條：先耗內力再耗氣血；總量少者在 TM 毫秒耗盡（原作 calcTimeStamps）
- const TM=3000,tl=N.nA[0]+N.nA[1],tr=N.nE[0]+N.nE[1],mn=Math.max(1,Math.min(tl,tr)),LT=tl/mn*TM,RT=tr/mn*TM,LN=tl?N.nA[0]/tl*LT:0,RN=tr?N.nE[0]/tr*RT:0;
+ const TM=b.ftue?4500:3000,tl=N.nA[0]+N.nA[1],tr=N.nE[0]+N.nE[1],mn=Math.max(1,Math.min(tl,tr)),LT=tl/mn*TM,RT=tr/mn*TM,LN=tl?N.nA[0]/tl*LT:0,RN=tr?N.nE[0]/tr*RT:0;
  const qx=(n,on)=>{const e=qn(R,n);if(!e||e.dataset.qx===(on?'1':'0'))return;e.dataset.qx=on?'1':'0';if(on){if(!e.dataset.bg0)e.dataset.bg0=e.style.background;e.style.background='url(a/ui/qy/art_font_qixue.png) center/67px 27px no-repeat';e.style.width='67px'}else if(e.dataset.bg0){e.style.background=e.dataset.bg0;e.style.width='65px'}};
  const bars=(t)=>{const set=(n,p)=>{const e=qn(R,n);if(e)e.style.clipPath=`inset(0 ${Math.min(100,Math.max(0,p*100))}% 0 0)`};
   set('leftNeiliBar',LN?Math.min(1,t/LN):1);qx('leftNeiliText',t>LN);qx('rightNeiliText',t>RN);set('leftQixueBar',t<=LN?0:(LT-LN?(t-LN)/(LT-LN):1));set('rightNeiliBar',RN?Math.min(1,t/RN):1);set('rightQixueBar',t<=RN?0:(RT-RN?(t-RN)/(RT-RN):1))};bars(0);
  T(()=>{const t0=performance.now();const loop=()=>{if(fin)return;const t=Math.min(TM,performance.now()-t0);bars(t);if(t<TM)raf=requestAnimationFrame(loop);else end()};raf=requestAnimationFrame(loop)},2900);
  const end=()=>{sfx('neiliend');const fl=Q('.nlflash');fl.style.transition='none';fl.style.opacity='1';requestAnimationFrame(()=>{fl.style.transition='opacity .7s';fl.style.opacity='0'});Q('.nlball').style.opacity='0';
-  if(b.ftue){/* 使用者指定：開場的決戰回合比完內力後雙方都被震飛出去、畫面變暗，直接接老掌門交接的動畫（不顯示勝利／失敗） */
-   R.querySelectorAll('.nlfig').forEach((e,j)=>{const rt=+e.dataset.r,dx=rt?620:-620,dy=-160-((j*37)%90),rot=rt?540:-540;e.style.transition='transform 1.3s cubic-bezier(.15,.55,.35,1),opacity .5s .9s';requestAnimationFrame(()=>{e.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)${rt?'':' scaleX(-1)'}`;e.style.opacity='0'})});
-   const dk=document.createElement('div');dk.className='qa';dk.style.cssText='left:0;top:0;width:960px;height:640px;background:#000;opacity:0;pointer-events:none;z-index:50;transition:opacity 1s';R.appendChild(dk);T(()=>{dk.style.opacity='1'},1000);T(close,2300);return}
+  if(b.ftue){/* 使用者指定：開場的決戰回合比完內力後雙方都被震飛出去、畫面變暗，直接接老掌門交接的動畫（不顯示勝利／失敗）；
+   飛出去用慢動作強調震撼：爆炸瞬間定格約 0.3 秒並震動畫面，接著先猛然彈開一小段，之後以慢動作緩緩旋轉飛出，鏡頭微微拉近，最後轉暗（節奏為本版設計） */
+   const FG=[...R.querySelectorAll('.nlfig')],cam=[Q('.nlfigs'),Q('.nlbands')].filter(Boolean);
+   FG.forEach(e=>{e.style.transition='none';e.style.filter='brightness(1.8)'});
+   const sh=R.closest('.scl');if(sh&&sh.animate)sh.animate([{transform:'translate(0,0)'},{transform:'translate(-9px,5px)'},{transform:'translate(8px,-6px)'},{transform:'translate(-6px,-4px)'},{transform:'translate(5px,6px)'},{transform:'translate(0,0)'}],{duration:320,easing:'linear'});
+   T(()=>{FG.forEach((e,j)=>{e.style.filter='';const rt=+e.dataset.r,dx=rt?640:-640,dy=-150-((j*37)%90),rot=rt?400:-400,fl=rt?'':' scaleX(-1)',tf=(k)=>`translate(${dx*k}px,${dy*k}px) rotate(${rot*k}deg)${fl}`;
+     if(e.animate)e.animate([{transform:tf(0),opacity:1,offset:0},{transform:tf(.2),opacity:1,offset:.1},{transform:tf(.55),opacity:1,offset:.6},{transform:tf(1),opacity:0,offset:1}],{duration:3200,easing:'linear',fill:'forwards'});else{e.style.transition='transform 3s ease-out,opacity 1s 2s';e.style.transform=tf(1);e.style.opacity='0'}});
+    cam.forEach(c=>{if(c.animate)c.animate([{transform:'scale(1)'},{transform:'scale(1.1)'}],{duration:3200,easing:'ease-out',fill:'forwards'})})},320);
+   const dk=document.createElement('div');dk.className='qa';dk.style.cssText='left:0;top:0;width:960px;height:640px;background:#000;opacity:0;pointer-events:none;z-index:50;transition:opacity 1.3s ease-in';R.appendChild(dk);T(()=>{dk.style.opacity='1'},2500);T(close,3900);return}
   R.querySelectorAll('.nlfig').forEach(e=>{const lose=(+e.dataset.r)===(N.win?1:0);if(lose)e.style.filter='grayscale(1) brightness(.6)'});
   const fc=R.querySelectorAll('.nlfc');const lf=fc[N.win?1:0];if(lf)lf.style.filter='grayscale(1)';const res=Q('.nlres');res.style.transition='opacity .3s';res.style.opacity='1';T(close,1800)};
  const close=()=>{if(fin)return;fin=true;tms.forEach(clearTimeout);cancelAnimationFrame(raf);clearInterval(figT);ov.remove();done()};
@@ -5984,7 +5990,7 @@ function liText(c,t,x,y,sz,fill,al='center',st='#2a1408',sw=3,key){t=String(t);
 function txt(c,t,x,y,sz,col,al='center',st='#2a1408',w=3){liText(c,t,x,y,sz,col,al,st,w);return;c.font=`900 ${sz}px ${FB}`;c.textAlign=al;c.textBaseline='middle';c.lineJoin='round';if(st){c.lineWidth=w;c.strokeStyle=st;c.strokeText(t,x,y)}c.fillStyle=col;c.fillText(t,x,y)}
 // 戰鬥畫面內的加速／跳過按鈕（右下角，仿一般手遊：快轉圖示＋倍數，加速時金色發光）
 const CTL={sk:{x:390,y:CH-68,w:186,h:62},sp:{x:588,y:CH-68,w:186,h:62}},ctlS=cv=>1;
-function canSkip(){if(EVB)return EVB.kind==='rob'?ykLv()>=1:EVB.kind==='ftue'?ftCanSkip():1;const st=(S.st||{})[last.d+'|'+last.i]||0,rs=st>=3?0:st>0?1:1000;return (SC&&SC.round||1)>rs}
+function canSkip(){if(EVB)return EVB.kind==='rob'?ykLv()>=1:EVB.kind==='ftue'?opSkip():1;const st=(S.st||{})[last.d+'|'+last.i]||0,rs=st>=3?0:st>0?1:1000;return (SC&&SC.round||1)>rs}
 // 戰鬥按鈕：「跳過」只在可跳過時出現（照原作）；「跳過」照原作 a_UI_attack（btn_01 按鈕＋art_font_btn_tiaoguo 字、畫面下方中央；原作座標 y 落在本版畫布外，往上移到畫布內）
 // 「加速」原作沒有，本版自訂：用同款 btn_01 按鈕放在跳過右側
 function drawCtl(c,Z,t){if(!busy&&!(last&&last.b&&!last.done))return;const A=QY&&QY.A,ok=!!A;
@@ -6523,7 +6529,7 @@ const SOLO_NEW=['單機版新增功能',`以下是單機版自己加入或自訂
 單機沒有其他玩家，論劍、掠奪、地界、恩怨、劫鏢、巔峰爭霸、武林大會、天下第一、排行榜、聊天頻道中的其他掌門，以及風雲再起的助戰「神秘人」，都由電腦扮演。論劍前 30 名模擬課金玩家，會隨你的成長慢慢變強。
 
 【便利功能】
-一鍵挖礦、一鍵閉關（傳說月卡以上）、勇闖魔教自動闖關、關卡掃蕩、戰鬥加速、戰鬥重播、跳過新手教學（第一次遊玩不能跳過開場動畫與新手教學，重新開始過一次後才可跳過；跳過教學時直接隨機獲得快活侯、鳩智慧、任教主其中一位）；戰鬥卡住時會自動結算；設置中可匯出存檔，以及開發用的「匯入進度」（取代原本的門派更名；離線版沒有匯入功能）。
+一鍵挖礦、一鍵閉關（傳說月卡以上）、勇闖魔教自動闖關、關卡掃蕩、戰鬥加速、戰鬥重播、跳過新手教學（第一次遊玩不能跳過新手教學，重新開始過一次後才可跳過；跳過教學時直接隨機獲得快活侯、鳩智慧、任教主其中一位）、跳過片頭動畫（看完一次完整片頭後，可在設置勾選「跳過片頭動畫」，之後新開門派直接進入創建門派；沒有勾選的話，重新開始後片頭一樣要看完、不能點掉）；戰鬥卡住時會自動結算；設置中可匯出存檔，以及開發用的「匯入進度」（取代原本的門派更名；離線版沒有匯入功能）。
 
 【活動與商城】
 每月固定檔期輪流開放各項活動，活動弟子每期隨機；全服購買量、排行榜其他門派為模擬；月卡、禮包改用元寶購買；VIP 改以累計消費元寶計算。
@@ -7315,6 +7321,12 @@ function ftNext(){FTRS=0;S.ft++;if(S.ft>=FTS.length){S.ft=FTS.length;ftHide();to
 function ftHide(){if(FTL){FTL.remove();FTL=null}}
 // 使用者指定：第一次遊玩不能跳過開場動畫、新手戰鬥與新手教學；重新開始（清除存檔）過一次之後才可以跳過（記錄存在存檔之外，清除存檔也保留）
 function ftCanSkip(){try{return localStorage.getItem('xzm_rs')==='1'}catch(e){return false}}
+// 使用者指定：設置裡的「跳過片頭動畫」勾選。看完一次完整片頭（開場動畫＋光明頂新手戰鬥＋師父遺言）之後才能勾選；
+// 勾選後新開門派直接進創建門派畫面；沒勾的話即使重新開始，片頭一樣要看完、不能點掉（記錄存在存檔之外）
+function opSeen(){try{return localStorage.getItem('xzm_opseen')==='1'}catch(e){return false}}
+function opMarkSeen(){try{localStorage.setItem('xzm_opseen','1')}catch(e){}}
+function opSkip(){try{return opSeen()&&localStorage.getItem('xzm_skipop')==='1'}catch(e){return false}}
+function opSetSkip(v){try{localStorage.setItem('xzm_skipop',v?'1':'0')}catch(e){}}
 function ftMarkReset(){try{localStorage.setItem('xzm_rs','1')}catch(e){}}
 // 跳過新手教學時，若還沒拿到教學送的甲級弟子，直接從原教學的三位（快活侯、鳩智慧、任教主）隨機給一位，並放到陣首
 function ftSkip(){if(!ftCanSkip())return;S.ftOff=1;let msg='已跳過新手教學';if(!S.ftg){const P=['HA101','HA102','HA103'].filter(i=>HM[i]&&!S.heroes[i]);if(P.length){const id=P[Math.floor(Math.random()*P.length)];giveDrop(id,1,[]);S.ftg=1;S.tpos=S.tpos||{};if(!S.team.includes(id)){const used=new Set(S.team.map(h=>S.tpos[h]));S.team.push(id);let sl=0;while(used.has(sl)&&sl<7)sl++;S.tpos[id]=sl}msg+=`，獲得甲級弟子「${HM[id].n}」`}}save();ftHide();toast(msg);render()}
@@ -7605,7 +7617,7 @@ let CHQ=0,CHQT=null;function bagQty(t,max,fn){if(max<=1){fn();return}let q=1;qyP
 function openSettings(){if(!QY){qyLoad().then(openSettings).catch(()=>openSettings0());return}
  qyPop('sz',(R,close)=>{const tick=()=>{qshow(R,'tickMusic',SND.m);qshow(R,'tickSfx',SND.s)};tick();
   const lab=(hide,txt,cx,cy)=>{if(hide){const e=R.querySelector(`[data-im="${hide}"]`);if(e)e.style.display='none'}const d=qAdd(R,`<span class="szlab nobm">${esc(txt)}</span>`,{l:cx-170,t:cy-22,w:340,h:44});return d.firstChild};
-  const spd=lab('art_font_btn_bug','',290,424),gm=lab('art_font_btn_qqqun',window.__NOIMP?'':'匯入進度（開發用）',290,551),ft=lab('art_font_btn_cd','',671,423);qhide(R,'mcBugReport');
+  const spd=lab('art_font_btn_bug','',290,424),gm=lab('art_font_btn_qqqun','跳過片頭動畫',338,551),ft=lab('art_font_btn_cd','',671,423);qhide(R,'mcBugReport');
   const upd=()=>{spd.textContent='戰鬥速度：'+(SPD>1?'加速 ×'+SPD:'正常');ft.textContent=ftOn()&&ftCanSkip()?'關閉新手教學':'匯出存檔'};upd();
   const on=(n,f)=>{const b=qn(R,n);if(b)pe2(b).onclick=f};
   on('btnClose',close);on('btnBack',()=>{close();tab=0;MAPV=true;render()});
@@ -7614,7 +7626,8 @@ function openSettings(){if(!QY){qyLoad().then(openSettings).catch(()=>openSettin
   on('btnEvent',()=>{close();gonglue(null,1)});/* 原版：活動提示＝公告列表（notice） */
   on('btnGonglue',()=>{close();gonglue('bz')});/* 原版：新手幫助＝攻略說明（GongLueView） */
   on('btnBug',()=>{spdNext();upd()});
-  /* 離線版（window.__NOIMP 為離線版載入器）不提供匯入進度（使用者指定） */if(window.__NOIMP){qhide(R,'btnQQ');if(gm&&gm.parentElement)gm.parentElement.style.display='none'}else on('btnQQ',()=>{close();saveImportPop()});/* 本版自訂：原位置改為開發用匯入進度（原版為門派更名） */
+  /* 原版 QQ 群按鈕的位置改為「跳過片頭動畫」勾選（使用者指定）；勾選框照音樂、音效按鈕的樣式 */{const bx=qAdd(R,'',{l:182,t:511,w:65,h:66}),tk=qAdd(R,'',{l:182,t:511,w:65,h:66});qIm(bx,'fix_a_bg_buzhen_xuanzekuang');qIm(tk,'fix_a_bg_buzhen_duigou');const st=()=>{tk.style.display=opSkip()?'':'none';gm.style.opacity=opSeen()?'1':'.6'};st();on('btnQQ',()=>{if(!opSeen()){toast('第一次玩要先看完片頭動畫，之後才能勾選跳過');return}opSetSkip(!opSkip());st();toast(opSkip()?'已勾選：之後新開門派會跳過片頭動畫':'已取消：之後新開門派會播放片頭動畫')})}
+  /* 網頁版開發用匯入進度：離線版、自架網站版沒有（使用者指定） */if(!window.__NOIMP){const ib=qAdd(R,'<button class="nobm" style="width:100%;height:100%;border:1px solid #8a6a3a;border-radius:6px;background:rgba(255,248,230,.85);color:#5a3412;font-size:15px;pointer-events:auto">匯入進度（開發用）</button>',{l:760,t:596,w:170,h:32});ib.style.pointerEvents='auto';ib.firstChild.onclick=()=>{close();saveImportPop()}}/* 本版自訂：原位置改為開發用匯入進度（原版為門派更名） */
   on('btnCdkey',()=>{if(!ftOn()||!ftCanSkip()){saveExport();return}ftSkip();upd()});
   on('btnReset',()=>{askYes('確定清除全部進度，重新開始？').then(ok=>{if(!ok)return;ftMarkReset();try{localStorage.removeItem(KEY)}catch(e){}S=load();last=null;tab=0;close();render()})});
   bmApply(R)})}
@@ -7784,7 +7797,7 @@ function ljInspectEnd(){if(!INSP)return;if(INSP.back){const{real,back}=INSP;INSP
 let MOVIE=false,MOVV=null;
 // 播放開場影片：同一個影片元件重複使用（手機在第一段被點過之後，第二段才能自動帶聲音播放）；
 // 瀏覽器擋自動播放時先改成靜音播放、右上角顯示靜音圖示，點一下開聲音（不再停在「點擊播放」，避免動畫之間卡住）；連靜音都被擋才顯示「點擊播放」
-function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e){}const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000;z-index:20000;cursor:'+(ftCanSkip()?'pointer':'default');
+function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e){}const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000;z-index:20000;cursor:'+(opSkip()?'pointer':'default');
  const v=MOVV||(MOVV=document.createElement('video'));v.setAttribute('playsinline','');v.playsInline=true;v.muted=false;v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain';
  const hint=document.createElement('div');hint.className='nobm';hint.textContent='點擊播放';hint.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#f3d9a0;font:900 28px "Noto Sans TC",sans-serif;display:none;text-shadow:0 2px 6px #000';
  const mute=document.createElement('div');mute.textContent='🔇';mute.setAttribute('aria-label','開啟聲音');mute.style.cssText='position:absolute;right:14px;top:10px;font-size:30px;display:none;opacity:.85;pointer-events:none';
@@ -7792,7 +7805,7 @@ function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e){}const ov=docu
  let i=0,ok=true,end=false;const fin=()=>{if(end)return;end=true;MOVIE=false;v.onended=v.onerror=null;try{v.pause()}catch(e){}ov.remove();done&&done();try{bgmUpdate()}catch(e){}};
  const tryPlay=()=>{const p=v.play();if(p&&p.catch)p.catch(()=>{if(!v.muted){v.muted=true;mute.style.display='';const q=v.play();if(q&&q.catch)q.catch(()=>{ok=false;mute.style.display='none';hint.style.display=''})}else{ok=false;hint.style.display=''}})};
  const next=()=>{if(i>=srcs.length){fin();return}const s0=srcs[i++];v.src=(v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')?s0:s0.replace(/\.mp4$/,'.webm'))+'?v=tw';/* 繁體字幕版（台版 APK） */tryPlay()};
- v.onended=next;v.onerror=next;ov.onclick=()=>{if(!ok){ok=true;hint.style.display='none';v.muted=false;v.play().catch(()=>{});return}if(v.muted){v.muted=false;mute.style.display='none';v.play().catch(()=>{});return}if(!ftCanSkip())return;next()};next()}
+ v.onended=next;v.onerror=next;ov.onclick=()=>{if(!ok){ok=true;hint.style.display='none';v.muted=false;v.play().catch(()=>{});return}if(v.muted){v.muted=false;mute.style.display='none';v.play().catch(()=>{});return}if(!opSkip())return;next()};next()}
 // 原作 StoryScene.playEpisode2：劇情 EXDA001（ftueStories）→ 光明頂戰鬥（ftueCombat.json，七大掌門 對 西方不敗，回合與傷害照原檔）
 //  → 劇情 EXDA002 → 決戰回合（NewNeiliScene，ftueNeili.json：峨眉／少林／武當掌門與掌門師傅 對 西方不敗，內力 300/500、500/300）→ 播 episode3（師父遺言）
 // 角色名照原作 ftueHeroes（str_F00x_name），圖用 assetId；決戰回合的少林掌門原檔為 VA124（敵人專用圖，本版沒有），改用同為少林掌門的 VA001（本版推定）
@@ -7826,7 +7839,7 @@ function disclaim(done){const ov=document.createElement('div');ov.id='discov';ov
  ov.addEventListener('click',()=>{if(canTap)hide()});show()}
 function render(){if(!DISC_DONE){if(!DISC_RUN){DISC_RUN=true;disclaim(()=>{DISC_DONE=true;render()})}return}try{teTick()}catch(e){}tposFix();if(tab!==1){BZPK=null;BZBACK=0}if(BZBACK&&tab===1&&!HSEL){BZBACK=0;tab=4;BZT=0}if(INSP&&!(tab===1&&HSEL&&S.heroes[HSEL])){ljInspectEnd();return}
  const app=document.getElementById('app');if(S.sect)cfTick();if(S.sect&&typeof IM!=='undefined'&&IM&&IM.jpc)for(const k in S.items)if(IM.jpc[k]){S.pc[k]=(S.pc[k]||0)+S.items[k];delete S.items[k]}
- if(!S.sect&&D&&CP){if(!QY){app.innerHTML='<p class="mut">載入中…</p>';qyLoad().then(render);return}document.body.classList.add('nonav');app.classList.add('wide');if(FTUE)return;if(!S.mv1){S.mv1=1;save();playMovie(['a/mv/episode1.mp4'],()=>ftueIntro(()=>playMovie(['a/mv/episode3.mp4'],render)));return}newSect();return}
+ if(!S.sect&&D&&CP){if(!QY){app.innerHTML='<p class="mut">載入中…</p>';qyLoad().then(render);return}document.body.classList.add('nonav');app.classList.add('wide');if(FTUE)return;if(!S.mv1){S.mv1=1;save();if(opSkip()){newSect();return}playMovie(['a/mv/episode1.mp4'],()=>ftueIntro(()=>playMovie(['a/mv/episode3.mp4'],()=>{opMarkSeen();render()})));return}newSect();return}
  if(!S.sect){app.innerHTML=`<h1>小掌門</h1><p class="mut">單機武俠原型：創立門派、收集魂魄招募俠客、闖蕩原作江湖章節。</p><div class="card"><label for="sn">門派名稱</label><input id="sn" maxlength="8" placeholder="例如：青雲門"><button class="go" id="mk">創立門派</button></div>`;
   document.getElementById('mk').onclick=()=>{const v=document.getElementById('sn').value.trim();if(!v)return;S.sect=v;const hs=[pick(POOL[1]),...[...POOL[0]].sort(()=>Math.random()-.5).slice(0,2)];for(const h of hs){S.heroes[h.id]={lv:1,exp:0,tp:0};S.team.push(h.id)}starterKit();grantTest();S.ft=0;save();render()};return}
  const nCh=CP.ch.filter((c,i)=>chCleared(0,i)).length;
