@@ -7781,8 +7781,18 @@ const INSPOK='[data-insp],[data-dtab],[data-hsel],[data-hsel2],[data-hlx],[data-
 function ljInspectEnd(){if(!INSP)return;if(INSP.back){const{real,back}=INSP;INSP=null;S=real;tab=0;MAPV=true;HSEL=null;render();setTimeout(back,0);return}const{real,r}=INSP;INSP=null;S=real;tab=6;HSEL=null;render();setTimeout(()=>ljInfo(r),0)}
 // 原作開場動畫（IntroScene.playEpisode1 → MovieScene 播 episode1.mp4，新手戰鬥後播 episode3.mp4；clickToSkip：點一下跳過）
 // 兩段影片之間照原作 StoryScene.playEpisode2 插入光明頂新手戰鬥（ftueIntro）；瀏覽器擋自動播放時先顯示「點擊播放」
-let MOVIE=false;function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e){}const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000;z-index:20000;cursor:'+(ftCanSkip()?'pointer':'default');const v=document.createElement('video');v.setAttribute('playsinline','');v.playsInline=true;v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain';const hint=document.createElement('div');hint.className='nobm';hint.textContent='點擊播放';hint.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#f3d9a0;font:900 28px "Noto Sans TC",sans-serif;display:none;text-shadow:0 2px 6px #000';ov.append(v,hint);document.body.appendChild(ov);
- let i=0,ok=true,end=false;const fin=()=>{if(end)return;end=true;MOVIE=false;ov.remove();done&&done();try{bgmUpdate()}catch(e){}};const next=()=>{if(i>=srcs.length){fin();return}const s0=srcs[i++];v.src=(v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')?s0:s0.replace(/\.mp4$/,'.webm'))+'?v=tw';/* 繁體字幕版（台版 APK） */const p=v.play();if(p&&p.catch)p.catch(()=>{ok=false;hint.style.display=''})};v.onended=next;v.onerror=next;ov.onclick=()=>{if(!ok){ok=true;hint.style.display='none';v.play().catch(()=>{});return}if(!ftCanSkip())return;next()};next()}
+let MOVIE=false,MOVV=null;
+// 播放開場影片：同一個影片元件重複使用（手機在第一段被點過之後，第二段才能自動帶聲音播放）；
+// 瀏覽器擋自動播放時先改成靜音播放、右上角顯示靜音圖示，點一下開聲音（不再停在「點擊播放」，避免動畫之間卡住）；連靜音都被擋才顯示「點擊播放」
+function playMovie(srcs,done){MOVIE=true;try{bgmUpdate()}catch(e){}const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000;z-index:20000;cursor:'+(ftCanSkip()?'pointer':'default');
+ const v=MOVV||(MOVV=document.createElement('video'));v.setAttribute('playsinline','');v.playsInline=true;v.muted=false;v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain';
+ const hint=document.createElement('div');hint.className='nobm';hint.textContent='點擊播放';hint.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#f3d9a0;font:900 28px "Noto Sans TC",sans-serif;display:none;text-shadow:0 2px 6px #000';
+ const mute=document.createElement('div');mute.textContent='🔇';mute.setAttribute('aria-label','開啟聲音');mute.style.cssText='position:absolute;right:14px;top:10px;font-size:30px;display:none;opacity:.85;pointer-events:none';
+ ov.append(v,hint,mute);document.body.appendChild(ov);
+ let i=0,ok=true,end=false;const fin=()=>{if(end)return;end=true;MOVIE=false;v.onended=v.onerror=null;try{v.pause()}catch(e){}ov.remove();done&&done();try{bgmUpdate()}catch(e){}};
+ const tryPlay=()=>{const p=v.play();if(p&&p.catch)p.catch(()=>{if(!v.muted){v.muted=true;mute.style.display='';const q=v.play();if(q&&q.catch)q.catch(()=>{ok=false;mute.style.display='none';hint.style.display=''})}else{ok=false;hint.style.display=''}})};
+ const next=()=>{if(i>=srcs.length){fin();return}const s0=srcs[i++];v.src=(v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')?s0:s0.replace(/\.mp4$/,'.webm'))+'?v=tw';/* 繁體字幕版（台版 APK） */tryPlay()};
+ v.onended=next;v.onerror=next;ov.onclick=()=>{if(!ok){ok=true;hint.style.display='none';v.muted=false;v.play().catch(()=>{});return}if(v.muted){v.muted=false;mute.style.display='none';v.play().catch(()=>{});return}if(!ftCanSkip())return;next()};next()}
 // 原作 StoryScene.playEpisode2：劇情 EXDA001（ftueStories）→ 光明頂戰鬥（ftueCombat.json，七大掌門 對 西方不敗，回合與傷害照原檔）
 //  → 劇情 EXDA002 → 決戰回合（NewNeiliScene，ftueNeili.json：峨眉／少林／武當掌門與掌門師傅 對 西方不敗，內力 300/500、500/300）→ 播 episode3（師父遺言）
 // 角色名照原作 ftueHeroes（str_F00x_name），圖用 assetId；決戰回合的少林掌門原檔為 VA124（敵人專用圖，本版沒有），改用同為少林掌門的 VA001（本版推定）
