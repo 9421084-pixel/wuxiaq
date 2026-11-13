@@ -15,6 +15,7 @@
 <script>/* 離線版（__U）與自架網站版（__SITE）都不提供匯入進度 */window.__NOIMP=!!(window.__U||window.__SITE);</script>
 <title>武俠Q傳:單機版</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&display=swap&text=%E3%80%81%E3%80%82%E4%B8%AD%E4%B9%8B%E4%BA%A6%E4%BA%BA%E4%BB%A5%E4%BB%BB%E4%BD%95%E4%BD%9C%E4%BD%BF%E5%85%AC%E5%85%B6%E5%88%A9%E5%88%BB%E5%89%B5%E5%8E%9F%E5%8F%8A%E5%8F%A4%E5%8F%B8%E5%90%8C%E5%90%8D%E5%93%81%E5%AE%98%E5%BA%B8%E5%BE%A9%E6%85%A7%E6%88%B2%E6%89%80%E6%89%BF%E6%8E%88%E6%96%B9%E6%99%BA%E6%9C%89%E6%9C%AA%E6%9C%AC%E6%AC%8A%E6%AD%A2%E6%AD%B8%E7%81%AB%E7%82%BA%E7%84%A1%E7%87%9F%E7%94%A2%E7%94%A8%E7%9A%84%E7%9B%AE%E7%9B%B8%E7%A6%81%E7%A8%B1%E7%B2%89%E7%B5%B2%E7%B6%93%E7%B9%BC%E8%80%85%E8%81%AF%E8%88%87%E8%89%B2%E8%91%97%E8%A1%8C%E8%A7%92%E8%B0%B7%E8%B2%A1%E9%80%B2%E9%81%8A%E9%87%91%E9%97%9C%E9%9D%9E%E9%BE%8D%EF%BC%8C">
 <style>
 :root{--bg:#eef1ec;--card:#fbfcfa;--ink:#1f2a27;--mut:#66736f;--jade:#2f7d6b;--seal:#b3402f;--line:#cfd8d3;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121917;--card:#1b2522;--ink:#e6ece9;--mut:#8fa09a;--jade:#4fb59c;--seal:#e0705d;--line:#2d3b37;color-scheme:dark}}
@@ -451,6 +452,7 @@ body.mob nav{margin-bottom:4px;gap:3px}
 body.mob nav button{padding:3px 4px;min-height:0;font-size:12px}
 body.mob canvas{width:auto;max-width:100%;max-height:calc(100vh - 44px);margin:2px auto 0}
 body.mob .tip,body.mob p.mut.tip{display:none}
+.disct{max-width:min(82vw,1000px);padding:0 4vw;color:#fff;font-family:"DFKai-SB","標楷體","BiauKai","Kaiti TC","LXGW WenKai TC","STKaiti","KaiTi",serif;font-size:clamp(18px,min(3.4vw,6.2vh),36px);line-height:1.9;letter-spacing:.06em;text-align:justify;text-shadow:1px 0 0 #d9a93c,-1px 0 0 #d9a93c,0 1px 0 #d9a93c,0 -1px 0 #d9a93c,1px 1px 0 #d9a93c,-1px -1px 0 #d9a93c,1px -1px 0 #d9a93c,-1px 1px 0 #d9a93c,0 0 8px rgba(217,169,60,.55);opacity:0;-webkit-user-select:none;user-select:none}
 /* 手機橫放：彈出視窗依螢幕高度縮放，整個 960×640 畫面都放得進螢幕（跟原版手機上看到的比例相同） */body.mob .bzp{padding:3px;border-width:2px}body.mob .bzb{padding:4px;margin-top:3px}body.mob:not(.mobp) .qypop .scl,body.mob:not(.mobp) .hiov>.scl{width:min(960px,calc(100vw - 8px),calc(100vh * 1.5))!important}
 body.mob .card{padding:4px;margin-bottom:4px}
 .mobrot{display:none}
@@ -7018,7 +7020,7 @@ const SNDA={weapon_null_cri:'weapon_null',weapon_whip_cri:'weapon_whip',skill_fi
 function sfx(n){if(!SND.s||!SND.ok||!n)return;n=(SNDA[n]||n).toLowerCase();try{const P=SND.pool[n]||(SND.pool[n]=[]);let a=P.find(x=>x.paused||x.ended);if(!a){if(P.length>=4)return;a=new Audio((SND.du&&SND.du[n])||'a/snd/'+n+'.mp3');P.push(a)}a.currentTime=0;a.volume=.8;const pr=a.play();if(pr)pr.catch(()=>{});SND.last=Date.now()}catch(e){}}
 let SNDB=0;
 // 原作 StoryScene：播影片時不放背景音樂（影片自帶聲音）；playEpisode2 一開始 sm:playCombatTheme（新手劇情、戰鬥、決戰回合都是戰鬥音樂），結束時 stopMusic 再播 episode3
-function bgmWant(){if(MOVIE)return'';if(FTUE)return'combat';if(!S||!S.sect)return'openingTheme';if(SNDB||document.querySelector('.nlov'))return'combat';if(tab===0&&!MAPV)return'campaign';return'theme'}
+function bgmWant(){if(!DISC_DONE)return'';if(MOVIE)return'';if(FTUE)return'combat';if(!S||!S.sect)return'openingTheme';if(SNDB||document.querySelector('.nlov'))return'combat';if(tab===0&&!MAPV)return'campaign';return'theme'}
 function bgmUpdate(){const w=SND.m&&SND.ok&&!document.hidden?bgmWant():'';if(w===SND.cur)return;SND.cur=w;if(SND.bgm){SND.bgm.pause();SND.bgm=null}if(!w)return;try{const a=new Audio('a/snd/bgm_'+w+'.mp3');a.loop=true;a.volume=.45;SND.bgm=a;const pr=a.play();if(pr)pr.catch(()=>{SND.cur=''})}catch(e){}}
 setInterval(bgmUpdate,800);document.addEventListener('visibilitychange',bgmUpdate);
 document.addEventListener('pointerdown',()=>{if(!SND.ok){SND.ok=true;bgmUpdate()}},true);
@@ -7803,7 +7805,16 @@ function hbCompact(){const A=document.getElementById('app');if(!A||!A.querySelec
  const col=['xn','lj','jh2','qy'].map(q).filter(Boolean),T=[404,312,220,128];col.forEach((e,i)=>{e.style.top=T[i]+'px';e.classList.add('hgrp');e.style.setProperty('--dy',(500-T[i])+'px')});
  const row=['sz','ey','ld','zs','wd'].map(q).filter(Boolean),R=[102,194,286,378,478];row.forEach((e,i)=>{e.style.left='';e.style.right=R[i]+'px';e.classList.add('hgrp');e.style.setProperty('--dx',(R[i]-17)+'px')});
  const c2=['tx','hs'].map(q).filter(Boolean),T2=[128,220];c2.forEach((e,i)=>{e.style.left='';e.style.right='109px';e.style.top=T2[i]+'px'})}
-function render(){try{teTick()}catch(e){}tposFix();if(tab!==1){BZPK=null;BZBACK=0}if(BZBACK&&tab===1&&!HSEL){BZBACK=0;tab=4;BZT=0}if(INSP&&!(tab===1&&HSEL&&S.heroes[HSEL])){ljInspectEnd();return}
+// 遊戲啟動聲明（使用者指定）：每次開啟遊戲先顯示兩段聲明，白字金邊、標楷體；第一段淡出變暗後再浮現第二段，結束才進入遊戲（新門派接開場動畫）
+// 字型：電腦用系統的標楷體；手機等沒有標楷體的裝置改用網路楷體字型「霞鶩文楷」（只下載這兩段文字用到的字），都沒有時用系統楷體或襯線字
+let DISC_DONE=false,DISC_RUN=false;
+const DISC_T=['本作品為利用火谷公司智慧財產權進行的非營利復刻創作，為非官方粉絲作品，與火谷公司無任何關聯，亦非其官方授權產品，禁止以營利為目的使用本作品。','本遊戲為非官方、非營利同人作品，未經授權使用金庸、古龍作品中的角色名稱，相關角色名稱之著作權歸原作者及其權利繼承人所有，本作品與原著作權利人無關，亦非官方產品。'];
+function disclaim(done){const ov=document.createElement('div');ov.id='discov';ov.style.cssText='position:fixed;inset:0;z-index:20001;background:#000;display:flex;align-items:center;justify-content:center;cursor:default';
+ const t=document.createElement('div');t.className='disct';ov.appendChild(t);document.body.appendChild(ov);let i=0,tm=[],canTap=false;const T=(f,ms)=>tm.push(setTimeout(f,ms));
+ const show=()=>{tm.forEach(clearTimeout);tm=[];canTap=false;t.textContent=DISC_T[i];t.style.transition='opacity 1.2s ease';t.style.opacity='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{t.style.opacity='1'}));T(()=>{canTap=true},2200);T(hide,6200)};
+ const hide=()=>{tm.forEach(clearTimeout);tm=[];canTap=false;t.style.transition='opacity 1s ease';t.style.opacity='0';T(()=>{i++;if(i<DISC_T.length)T(show,500);else{ov.remove();done()}},1000)};
+ ov.addEventListener('click',()=>{if(canTap)hide()});show()}
+function render(){if(!DISC_DONE){if(!DISC_RUN){DISC_RUN=true;disclaim(()=>{DISC_DONE=true;render()})}return}try{teTick()}catch(e){}tposFix();if(tab!==1){BZPK=null;BZBACK=0}if(BZBACK&&tab===1&&!HSEL){BZBACK=0;tab=4;BZT=0}if(INSP&&!(tab===1&&HSEL&&S.heroes[HSEL])){ljInspectEnd();return}
  const app=document.getElementById('app');if(S.sect)cfTick();if(S.sect&&typeof IM!=='undefined'&&IM&&IM.jpc)for(const k in S.items)if(IM.jpc[k]){S.pc[k]=(S.pc[k]||0)+S.items[k];delete S.items[k]}
  if(!S.sect&&D&&CP){if(!QY){app.innerHTML='<p class="mut">載入中…</p>';qyLoad().then(render);return}document.body.classList.add('nonav');app.classList.add('wide');if(FTUE)return;if(!S.mv1){S.mv1=1;save();playMovie(['a/mv/episode1.mp4'],()=>ftueIntro(()=>playMovie(['a/mv/episode3.mp4'],render)));return}newSect();return}
  if(!S.sect){app.innerHTML=`<h1>小掌門</h1><p class="mut">單機武俠原型：創立門派、收集魂魄招募俠客、闖蕩原作江湖章節。</p><div class="card"><label for="sn">門派名稱</label><input id="sn" maxlength="8" placeholder="例如：青雲門"><button class="go" id="mk">創立門派</button></div>`;
