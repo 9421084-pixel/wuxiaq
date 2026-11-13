@@ -7306,7 +7306,7 @@ const FTS=[
  {t:12,g:null,a:'left',on:ftFb,el:()=>ftQ('#app [data-n=btnClose]')},
  {t:13,g:[471,106],a:'bottom',on:ftHome,el:()=>ftQ('[data-home=sj]')},
  {t:14,g:null,a:'bottom',on:()=>tab===2&&JZT===0&&!document.querySelector('.qypop,.hiov'),el:()=>ftQ('#app [data-n=btnPick3]')},
- {t:15,g:[0,0],a:'right',on:()=>!!ftQ('.qypop [data-n=btnClose]'),el:()=>ftQ('.qypop [data-n=btnClose]')},
+ {t:15,g:[0,0],a:'right',on:()=>!!ftQ('.qypop [data-n=btnClose]'),el:()=>ftQ('.qypop [data-n=btnClose]'),/* 招募結果視窗已經被關掉（教學提示出現前就點掉）就直接進下一步 */skip:()=>S.ftg&&(!window.FTG_T||Date.now()-window.FTG_T>2500)&&!document.querySelector('.qypop,.hiov,.rceff')},
  {t:16,g:[304,96],a:'left',on:()=>tab===2&&(!!ftQ('.rcb')||!document.querySelector('.qypop,.hiov')),el:()=>ftQ('.rcb')||ftQ('#app [data-n=btnClose]'),stay:()=>!!ftQ('.rcb')},
  {t:17,g:[538,99],a:'bottom',on:ftHome,el:()=>ftQ('[data-home=bz]')},
  {t:18,g:[562,141],a:'top',on:()=>tab===4&&BZT===0&&!document.querySelector('.qypop,.hiov'),el:()=>ftQ('.bzhit[data-empty][data-bzslot="0"]')||ftQ('.bzhit[data-empty]')||ftQ('.bzhit.on'),skip:()=>tab===4&&!ftQ('.bzhit[data-empty]')&&!ftQ('.bzhit.on')},
@@ -7348,7 +7348,7 @@ function ftTick(){if(!ftOn()){ftHide();return}const st=FTS[S.ft];if(st.skip&&st.
   {const sk=FTL.querySelector('.ftsk');if(sk)sk.onclick=e=>{e.stopPropagation();ftSkip()}}
   FTL.addEventListener('click',e=>{if(e.target.classList.contains('ftsk'))return;const s2=FTS[S.ft];if(s2&&!s2.el)ftNext()})}
  FTL.dataset.k=S.ft;const W=innerWidth,H=innerHeight,m=FTL.querySelectorAll('.ftm'),hand=FTL.querySelector('.fth'),g=FTL.querySelector('.ftg'),bb=FTL.querySelector('.ftb');
- const base=(document.querySelector('#home')||document.querySelector('#app .scl')||document.getElementById('app')).getBoundingClientRect(),k=Math.min(1.1,Math.max(.45,base.width/960));
+ /* 小師妹與手指大小、位置依「遊戲畫面實際縮放」計算（手機上遊戲畫面是 960×640 依高度縮小並置中，原本只看寬度會把小師妹畫得太大、蓋住要點的按鈕） */const bE=document.querySelector('#home')||document.querySelector('#app .scl'),base0=(bE||document.getElementById('app')).getBoundingClientRect(),k=bE?Math.min(1.1,Math.max(.3,Math.min(base0.width/960,base0.height/640))):Math.min(1.1,Math.max(.45,base0.width/960)),base={left:base0.left+(bE?(base0.width-960*k)/2:0),top:base0.top+(bE?(base0.height-640*k)/2:0),width:960*k,height:640*k};
  if(el&&FTL.dataset.sc!==String(S.ft)){FTL.dataset.sc=S.ft;const sc=el.closest('#wm,.hcs,.shbox');if(sc){const er=el.getBoundingClientRect(),sr=sc.getBoundingClientRect(),kk=sr.width/(sc.offsetWidth||sr.width)||1;if(er.left<sr.left||er.right>sr.right)sc.scrollLeft+=((er.left+er.width/2)-(sr.left+sr.width/2))/kk}if(el.getBoundingClientRect().bottom>innerHeight||el.getBoundingClientRect().top<0)el.scrollIntoView({block:'center'})}
  if(el){const r=el.getBoundingClientRect(),p=4,x0=Math.max(0,r.left-p),y0=Math.max(0,r.top-p),x1=Math.min(W,r.right+p),y1=Math.min(H,r.bottom+p);
   const set=(e,l,t,w,h)=>{e.style.cssText=`left:${l}px;top:${t}px;width:${Math.max(0,w)}px;height:${Math.max(0,h)}px`};
@@ -7359,9 +7359,9 @@ function ftTick(){if(!ftOn()){ftHide();return}const st=FTS[S.ft];if(st.skip&&st.
   bb.style.display=st.g||!FTT[st.t]?'none':'';if(!st.g){bb.textContent=FTT[st.t];const bw=Math.min(340,W-16);bb.style.width=bw+'px';let bx=Math.min(W-bw-8,Math.max(8,cx-bw/2)),by=(a==='top'?y0-hh-bb.offsetHeight-10:y1+hh+8);if(by+bb.offsetHeight>H-4)by=Math.max(4,y0-bb.offsetHeight-hh-10);if(by<4)by=Math.min(H-bb.offsetHeight-4,y1+8);bb.style.left=bx+'px';bb.style.top=by+'px'}}
  else{m.forEach((e,i)=>{e.style.cssText=i<4?'display:none':''});m[4].style.display='';hand.style.display='none';bb.style.display='none'}
  if(st.g){g.style.display='';const gk=k,gx=base.left+st.g[0]*gk,gy=base.top+(640-st.g[1]-428)*gk;g.style.width=352*gk+'px';g.style.height=428*gk+'px';g.style.left=Math.max(4,Math.min(W-352*gk-4,gx))+'px';g.style.top=Math.max(4,Math.min(H-428*gk-4,gy))+'px';
-  const tt=g.querySelector('.ftgt');tt.textContent=FTT[st.t]+(st.el?'':'（點擊繼續）');tt.style.fontSize=19*gk+'px';tt.style.left=16*gk+'px';tt.style.top=(428-168)*gk+'px';tt.style.width=320*gk+'px';tt.style.height=150*gk+'px'}
+  const tt=g.querySelector('.ftgt');tt.textContent=FTT[st.t]+(st.el?'':'（點擊繼續）');tt.style.fontSize=Math.max(12,19*gk)+'px';tt.style.left=16*gk+'px';tt.style.top=(428-168)*gk+'px';tt.style.width=320*gk+'px';tt.style.height=150*gk+'px'}
  else g.style.display='none'}
-document.addEventListener('click',e=>{if(!ftOn()||!FTL)return;const st=FTS[S.ft];if(!st||!st.el)return;const el=st.el();if(el&&el.contains(e.target)&&!(st.stay&&st.stay()))setTimeout(ftNext,0)},true);
+/* 手指提示還沒出現前就先點了正確的按鈕（手機上常見）也算完成這一步，避免教學卡住 */document.addEventListener('click',e=>{if(!ftOn())return;const st=FTS[S.ft];if(!st||!st.el)return;try{if(!st.on())return}catch(x){return}const el=st.el();if(el&&el.contains(e.target)&&!(st.stay&&st.stay()))setTimeout(ftNext,0)},true);
 setInterval(ftTick,250);
 
 // ---------- 連續登錄獎勵（原作 ContinousDayView：UI_denglu/a_lianxudenglu_ui，翻牌池 daydayup）----------
@@ -8009,7 +8009,7 @@ function recruit(k,times){const T=TIERS[k];
  let paid=false,tok=false;const SS=!!(k>=1&&ssP()),FTF=typeof ftOn==='function'&&ftOn()&&FTS[S.ft]&&FTS[S.ft].t===14&&k===2&&!S.ftg;if(FTF){}else if(freeLeft(k).ok)useFree(k);else if((S.items.ID069||0)>=XUNN[k]){S.items.ID069-=XUNN[k];tok=true}else{if(!has(T.cur,T.cost))return;vipPay(T.cost);paid=true}
  S.fp=S.fp||{};let g0=null;if(paid){if(!SS)S.jh=(S.jh||0)+JHP[k];if(FIRSTG[k]!=null&&!S.fp[k]){g0=FIRSTG[k];S.fp[k]=1}}
  // 原作新手教學：小師妹帶去聚賢莊招募的那一次必得甲級弟子
- let ftp=null;if(typeof ftOn==='function'&&ftOn()&&FTS[S.ft]&&FTS[S.ft].t===14&&k===2&&!S.ftg){ftp=['HA101','HA102','HA103'].filter(i=>HM[i]);S.ftg=1}// 新手首抽：只從快活侯、鳩智慧、任教主三位裡抽（依玩家記憶的原版）
+ let ftp=null;if(typeof ftOn==='function'&&ftOn()&&FTS[S.ft]&&FTS[S.ft].t===14&&k===2&&!S.ftg){ftp=['HA101','HA102','HA103'].filter(i=>HM[i]);S.ftg=1;window.FTG_T=Date.now()}// 新手首抽：只從快活侯、鳩智慧、任教主三位裡抽（依玩家記憶的原版）
  const res=[];S.pity=S.pity||[0,0,0];for(let q=0;q<times;q++){const[pg,pn]=PITY[k];let h;if(ftp&&ftp.length&&q===0)h=HM[ftp[Math.floor(Math.random()*ftp.length)]];else if(g0!=null)h=wpick(g0,g0);else if(S.pity[k]+1>=pn)h=wpick(pg,T.hi);else if(SS&&Math.random()<.25)h=wpick(3,3);else h=wpick(T.lo,T.hi);
   if(h.r>=pg)S.pity[k]=0;else S.pity[k]++;
   if(!S.heroes[h.id]){S.heroes[h.id]={lv:1,exp:0,tp:0};res.push({id:h.id,nw:1})}
