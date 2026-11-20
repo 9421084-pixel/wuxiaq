@@ -11,6 +11,15 @@
  const px=(P)=>{if(!P)return;const X=Object.getOwnPropertyDescriptor(P,'clientX'),Y=Object.getOwnPropertyDescriptor(P,'clientY');if(!X||!Y||!X.get)return;try{Object.defineProperty(P,'clientX',{configurable:true,get(){return ROT?Y.get.call(this):X.get.call(this)}});Object.defineProperty(P,'clientY',{configurable:true,get(){return ROT?rw()-X.get.call(this):Y.get.call(this)}})}catch(e){}};
  px(window.MouseEvent&&MouseEvent.prototype);px(window.Touch&&Touch.prototype);
  const gb=Element.prototype.getBoundingClientRect;Element.prototype.getBoundingClientRect=function(){const r=gb.call(this);if(!ROT)return r;const left=r.top,top=rw()-r.right,width=r.height,height=r.width;return{left,top,width,height,right:left+width,bottom:top+height,x:left,y:top,toJSON(){return{left,top,width,height}}}};
+ /* 直拿旋轉時，瀏覽器原生的手指捲動方向會跟畫面差 90 度：改由程式依「畫面上的方向」捲動清單（左右或上下），放開後有慣性；拖動後不觸發點擊 */
+ let TS=null,NC=0;const scl=el=>{const o=[];while(el&&el.nodeType===1){const cs=getComputedStyle(el),ox=/(auto|scroll)/.test(cs.overflowX)&&el.scrollWidth>el.clientWidth+1,oy=/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+1;if(ox||oy)o.push({el,ox,oy});el=el.parentElement}return o};
+ document.addEventListener('touchstart',e=>{if(!ROT||e.touches.length!==1){TS=null;return}const t=e.touches[0];if(TS&&TS.raf)cancelAnimationFrame(TS.raf);TS={x:t.clientX,y:t.clientY,lx:t.clientX,ly:t.clientY,lt:performance.now(),vx:0,vy:0,sc:scl(e.target),moved:false,tg:null,ax:null}},{passive:true,capture:true});
+ document.addEventListener('touchmove',e=>{if(!ROT||!TS)return;const t=e.touches[0];if(!t)return;const dx=t.clientX-TS.x,dy=t.clientY-TS.y;
+  if(!TS.moved&&Math.hypot(dx,dy)>8){TS.moved=true;TS.ax=Math.abs(dx)>=Math.abs(dy)?'x':'y';const f=TS.sc.find(q=>TS.ax==='x'?q.ox:q.oy)||null;if(f){const r=f.el.getBoundingClientRect();f.k=(TS.ax==='x'?r.width/(f.el.offsetWidth||1):r.height/(f.el.offsetHeight||1))||1}TS.tg=f}
+  if(!TS.moved)return;if(e.cancelable)e.preventDefault();const now=performance.now(),ddx=t.clientX-TS.lx,ddy=t.clientY-TS.ly,dt=Math.max(1,now-TS.lt);const f=TS.tg;
+  if(f){if(TS.ax==='x')f.el.scrollLeft-=ddx/f.k;else f.el.scrollTop-=ddy/f.k}TS.vx=.8*(ddx/dt)+.2*TS.vx;TS.vy=.8*(ddy/dt)+.2*TS.vy;TS.lx=t.clientX;TS.ly=t.clientY;TS.lt=now},{passive:false,capture:true});
+ document.addEventListener('touchend',()=>{if(!ROT||!TS)return;if(TS.moved){NC=performance.now();const f=TS.tg,S0=TS;if(f){let v=(S0.ax==='x'?S0.vx:S0.vy)*16/f.k;const step=()=>{if(Math.abs(v)<.4)return;if(S0.ax==='x')f.el.scrollLeft-=v;else f.el.scrollTop-=v;v*=.94;S0.raf=requestAnimationFrame(step)};if(performance.now()-S0.lt<120)step()}}TS=TS&&TS.moved?TS:null},{passive:true,capture:true});
+ document.addEventListener('click',e=>{if(ROT&&performance.now()-NC<350){e.stopPropagation();e.preventDefault()}},true);
  upd();addEventListener('resize',upd,true);addEventListener('orientationchange',()=>setTimeout(()=>{upd();dispatchEvent(new Event('resize'))},300));})();</script>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
