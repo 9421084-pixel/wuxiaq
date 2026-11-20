@@ -1252,9 +1252,10 @@ function aiName(R){const r=R||Math.random,pk=a=>a[Math.floor(r()*a.length)];let 
  else if(k<.9)n=pk(AIN.e)+(r()<.5?pk(AIN.d):pk(AIN.s));
  else n=pk(AIN.b)+pk(AIN.s)+(r()<.3?pk(AIN.d):'');
  return[...n].slice(0,7).join('')}
-function smPop(){const s=S.sm||{},k=s.k||smSeason().k;if(SMPOP&&SMPOP.k===k)return SMPOP.L;const R=ljRng([...k].reduce((a,c)=>a*31+c.charCodeAt(0),7)>>>0),T=QY.T.lj,L=[];
+function smPop(){const s=S.sm||{},k0=s.k||smSeason().k,dd=Math.max(0,new Date().getDate()-1),k=k0+'|'+dd;if(SMPOP&&SMPOP.k===k)return SMPOP.L;const R=ljRng([...k].reduce((a,c)=>a*31+c.charCodeAt(0),7)>>>0),T=QY.T.lj,L=[];
  const band=(n,lo,hi,e)=>{for(let i=0;i<n;i++)L.push(Math.round(lo+(hi-lo)*Math.pow(R(),e||1)))};
  band(10,4400,5600,.7);band(20,4000,4400);band(60,3000,4000,1.3);band(160,2000,3000,1.3);band(450,1000,2000,1.4);band(SMN-700,0,1000,1.6);
+ /* 本版自訂：電腦掌門在賽季中每天積極打排位往上爬（每人每天 0～18 分，依各自活躍度），越到賽季後段門檻越高 */const R3=ljRng(([...k0].reduce((a,c)=>a*31+c.charCodeAt(0),3)>>>0)+1);for(let i=0;i<L.length;i++)L[i]=Math.round(L[i]+dd*R3()*18);
  const used=new Set();const out=L.sort((a,b)=>b-a).map((p,i)=>{let n;for(let z=0;z<6;z++){n=aiName(R);if(!used.has(n))break}used.add(n);return{i,p,z:1+Math.floor(R()*98)+1,name:n}});
  SMPOP={k,L:out};return out}
 function smRank(pts){return smPop().filter(x=>x.p>pts).length+1}
@@ -1262,12 +1263,18 @@ function smTier(s){s=s||smS();const p=s.pts;if(p>=4000&&smRank(p)<=10)return 6;r
 const smTierP=p=>p>=4000?5:p>=3000?4:p>=2000?3:p>=1000?2:1;
 const smZone=z=>`（${z}區）`;
 // 對手：積分換算成「論劍名次」決定強弱；一代宗師以上用課長隊伍，再加倍率（最強約 1.6 倍論劍第 1 名）
-function smFoe(o){const p=o.p,sd=20000+o.i;let b;
- if(p>=4000){const xm=1+Math.min(.6,(p-4000)/1600*.6);b=ljElite(1,{sd,xm,fl:.7})}
+// 本版自訂（使用者要求巔峰爭霸、武林大會、天下第一比照論劍）：被你打敗的電腦掌門（以名字認人）會記仇，
+//  約 4 小時內苦練變強（每次 +12% 戰力，最多 5 次＝+60%），之後較常回頭找你；打贏你就消氣，3 天沒再被你打敗也會消氣。
+function grdGet(n){const G=S.grd;if(!G||!n)return 0;const g=G[n];if(!g)return 0;const age=(Date.now()-g.t)/36e5;if(age>72){delete G[n];return 0}return Math.min(5,g.n)*Math.min(1,age/4)}
+function grdRipe(n){const g=S.grd&&S.grd[n];return!!g&&(Date.now()-g.t)/36e5>=4&&grdGet(n)>0}
+function grdAdd(n){if(!n)return;S.grd=S.grd||{};const g=S.grd[n]||(S.grd[n]={n:0,t:0});g.n=Math.min(5,g.n+1);g.t=Date.now()}
+function grdDel(n){if(S.grd&&n)delete S.grd[n]}
+function smFoe(o){const p=o.p,sd=20000+o.i,gk=grdGet(o.name),bo=1+.12*gk;let b;
+ if(p>=4000){const xm=(1+Math.min(.6,(p-4000)/1600*.6))*bo;b=ljElite(1,{sd,xm,fl:.7,gk})}
  else{const r=Math.max(1,Math.round(Math.pow(10,Math.log10(LJN)*(1-p/4000))));
-  if(r<=LJE)b=ljElite(r,{sd});else{const pid=500000+o.i,P=Math.max(0,1-Math.log10(r)/Math.log10(LJN))+Math.max(0,(Date.now()-ljAI().t0)/864e5)*LJGR*ljAct(pid);b=ljPersona(pid,r,P);b.pid=pid}}
- b.name=o.name;return b}
-function smPick(){const s=smS(),L=smPop(),me=s.pts;const c=L.map(x=>[Math.abs(x.p-me)+(x.i===s.last?1e6:0),x]).sort((a,b)=>a[0]-b[0]).slice(0,8).map(x=>x[1]);return c[Math.floor(Math.random()*c.length)]}
+  if(r<=LJE)b=ljElite(r,gk?{sd,xm:bo,gk}:{sd});else{const pid=500000+o.i,P=(Math.max(0,1-Math.log10(r)/Math.log10(LJN))+Math.max(0,(Date.now()-ljAI().t0)/864e5)*LJGR*ljAct(pid))*Math.pow(bo,.45);b=ljPersona(pid,r,P);b.pid=pid}}
+ b.name=o.name;if(gk)b.gk=gk;return b}
+function smPick(){const s=smS(),L=smPop(),me=s.pts;{const rv=L.filter(x=>x.i!==s.last&&Math.abs(x.p-me)<=900&&grdRipe(x.name));if(rv.length&&Math.random()<.5)return rv[Math.floor(Math.random()*rv.length)]}const c=L.map(x=>[Math.abs(x.p-me)+(x.i===s.last?1e6:0),x]).sort((a,b)=>a[0]-b[0]).slice(0,8).map(x=>x[1]);return c[Math.floor(Math.random()*c.length)]}
 let SMV='entry';
 function smOpen(){if(busy)return;qyLoad().then(()=>{if(!smUnlock()){toast('掌門請達到16級再來挑戰巔峰爭霸！');return}smS();tab=12;MAPV=false;SMV='entry';EVB=null;render();window.scrollTo(0,0)})}
 function smView(){if(EVB&&EVB.kind==='sm'&&!EVB.done)return`<div class="card qyb">${canvasTag}<div id="log"></div></div>`;if(SMV==='zr'&&SMSET===3&&QY&&D&&D.zw){smZ();smQxInit();return`<i id="smqh" hidden></i>`+zwView()}return`<div class="qyw zfw"><div class="scl qyr" data-w="960" data-h="640"><div class="scli qy" id="smi"></div></div></div>`}
@@ -1301,7 +1308,7 @@ async function smFight(){if(busy)return;if(SMORD&&!document.querySelector('.qypo
   const side=(nd,nm,lv,tier,dj,hid)=>{const c=qn(R,nd);if(!c)return;qtx(c,'txtName',nm);qtx(c,'txtLevel',lv);qshow(c,'str_dingji_ing',!!dj);qtx(c,'str_dingji_ing','(定級中)');smBadge(c,tier);const bg=qn(c,'spBg');if(bg&&hid){const q=qBox(bg);const ph=qAdd(bg.parentElement,`<span style="display:block;width:74px;height:74px;border-radius:50%;overflow:hidden">${heroIco(hid,74)}</span>`,{l:q.l+q.w/2-37,t:q.t+q.h/2-25,w:74,h:74});bg.parentElement.insertBefore(ph,bg.nextSibling)}};
   side('mcLeft',smZone(1)+S.sect,cf().lv,t,s.dj,S.team[0]);side('mcRight',smZone(o.z)+o.name,b.al||b.lv,ot,0,b.hs&&b.hs[0]);
   let c=3;const cd=qn(R,'txtCombatCd');const tk=()=>{if(!R.isConnected){busy=false;return}if(cd)cd.textContent=`距戰鬥開始還有${c}秒.....`;if(c<=0){close();smGo3(o,b,ord,E3);return}c--;setTimeout(tk,1000)};tk();bmApply(R)})})}
-function smSettle(o,b,win,res,bts){const s=smS(),me=s.pts,t=smTier(s);let dp=0,ap=0;
+function smSettle(o,b,win,res,bts){const s=smS(),me=s.pts,t=smTier(s);let dp=0,ap=0;if(win)grdAdd(o.name);else grdDel(o.name);
   if(win){s.win++;s.st=s.st>0?s.st+1:1}else{s.lose++;s.st=s.st<0?s.st-1:-1}
   if(s.dj){s.dj.n++;if(win)s.dj.w++;if(s.dj.n>=5){const keep=s.dj.w>=3,pt=Math.min(5,s.dj.t),nt=keep?pt:Math.max(1,pt-1);s.pts=SMR[nt-1][1];toast(keep?`定級賽 ${s.dj.w} 勝，保留${SMR[pt-1][0]}階位`:`定級賽只勝 ${s.dj.w} 場，階位降為${SMR[nt-1][0]}`);s.dj=null}}
   else{const rc=SMR[t-1][2],k=Math.max(.5,Math.min(1.5,1+(o.p-me)/1000)),cn=SMC[String(Math.max(-5,Math.min(5,s.st)))]||0;dp=win?Math.round(rc*k*(1+cn)):-Math.round(rc*.5/k*(1+cn));s.pts=Math.max(0,me+dp)}
@@ -1391,6 +1398,9 @@ function smOrder(o,b,cb){if(SMORD)return;SMORD=true;const z=smZ();let ord=(z.ord
   pe2(qn(R,'btnStart')).onclick=()=>{z.ord=ord.slice();save();close();SMORD=false;cb(ord)};bmApply(R)});open()}
 // 三戰兩勝
 function smGo3(o,b,ord,E3){const z=smZ(),res=[],bts=[];const nm=smZone(o.z)+o.name;busy=true;
+ /* 本版自訂（AI 更聰明）：對手看你三套的出場順序，重新安排自己三套對上哪一場，讓贏兩場的機會最大（田忌賽馬） */
+ try{const pm=[0,1,2].map(g=>{const M=smSetUnits(z.up[ord[g]]);return M.length?ljPow(M):0}),pe=E3.map(E=>E&&E.length?ljPow(E):0),pw=(a,b)=>!b?0:!a?1:1/(1+Math.pow(a/b,3));
+  let best=null,bv=-1;for(const P of[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]]){const q=P.map((k,g)=>pw(pm[g],pe[k])),v=q[0]*q[1]+q[0]*q[2]+q[1]*q[2]-2*q[0]*q[1]*q[2];if(v>bv){bv=v;best=P}}if(best)E3=best.map(k=>E3[k])}catch(e){}
  const step=g=>{const w=res.filter(x=>x).length,l=res.length-w;if(g>=3||w>=2||l>=2){busy=false;smSettle(o,b,w>=2,res,bts);return}
   const M=smSetUnits(z.up[ord[g]]),E=E3[g]||[];
   if(!E.length||!M.length){res.push(E.length?0:1);toast(`第${'一二三'[g]}場：${E.length?'我方陣容無弟子，判負':'對方陣容無弟子，判勝'}`);step(g+1);return}
@@ -1488,7 +1498,7 @@ const wdLead=(g,i)=>{try{if(i===WDME)return S.team[0]||heroOrder()[0];const b=wp
 function wdAva(c,hid){if(!c||!hid)return;const ph=c.querySelector('[data-im=fix_a_bg_main_touxiang01]');if(!ph)return;const q=qBox(ph),z=q.w-8;const pd=qAdd(ph.parentElement,`<span class="pt" style="position:absolute;left:0;top:0;width:${z}px;height:${z}px;${ptStyle(hid,z)}"></span>`,{l:q.l+4,t:q.t+4,w:z,h:z});pd.style.borderRadius='50%';pd.style.overflow='hidden';ph.parentElement.insertBefore(pd,ph.nextSibling)}
 function wdName(g,i){if(i===WDME)return{z:1,name:S.sect};const o=wdPool(g)[i];return o}
 // 一場：你的比賽實際對打（每場一戰），電腦之間照戰力比
-function wdDuel(g,a,b,R){if(a===WDME||b===WDME){const o=wdPool(g)[a===WDME?b:a];let w=false;try{const E=ljUnits(smFoe({p:o.p,i:100000+o.i+(g==='m'?0:5000),name:o.name}));w=sim(null,E,wdMyTeam()).win}catch(e){console.error(e)}return a===WDME?(w?a:b):(w?b:a)}
+function wdDuel(g,a,b,R){if(a===WDME||b===WDME){const o=wdPool(g)[a===WDME?b:a];let w=false;try{const E=ljUnits(smFoe({p:o.p,i:100000+o.i+(g==='m'?0:5000),name:o.name}));w=sim(null,E,wdMyTeam()).win}catch(e){console.error(e)}if(w)grdAdd(o.name);else grdDel(o.name);return a===WDME?(w?a:b):(w?b:a)}
  const pa=wdPow(wdPool(g)[a].p),pb=wdPow(wdPool(g)[b].p),pw=1/(1+Math.pow(pb/Math.max(1,pa),3));return R()<pw?a:b}
 // 戰鬥重播（本版自訂：原作由伺服器存錄影；這裡用固定亂數種子重打一場，挑出與紀錄勝負相同的那一場播放，之後同一局固定用同一個種子）
 const wdFoeB=(g,i)=>{const o=wdPool(g)[i];return smFoe({p:o.p,i:100000+o.i+(g==='m'?0:5000),name:o.name})};
@@ -1792,12 +1802,12 @@ function txFoe(g,i,test){const T=IM.tx.lv['DW'+g][i],x=S.tx,rel=x&&x.dan===g?Mat
  // 本版自訂：段位對應論劍名次的電腦掌門（青銅約第 2500 名、白銀 600、黃金 180、白金 70、鑽石 35；傳說為前 10 名課長，勝場越多越接近第 1 名）
  if(g<6){const r=[2500,600,180,70,35][g-1],pid=300000+sd,P=Math.max(0,1-Math.log10(r)/Math.log10(LJN))+Math.min(.25,rel*.01)+Math.max(0,(Date.now()-ljAI().t0)/864e5)*LJGR*ljAct(pid);b=ljPersona(pid,r,P);b.pid=pid;b.pay=[0,.1,.2,.3,.4][g-1]}
  else{const r=Math.max(1,10-Math.floor(rel/5));b=ljElite(r,{sd:300000+sd,xm:1+Math.min(.3,rel*.005)})}
- {const M=[.07,.14,.27,.45,.72,1],need=g<6?IM.tx.dan['DW'+(g+1)][1]-IM.tx.dan['DW'+g][1]:60,t=Math.min(1,rel/need),lo=M[g-1],hi=g<6?M[g]:1.6;b.tgt=wdPow(4000)*(lo+(hi-lo)*t*.8)}// 本版自訂：戰力以巔峰爭霸一代宗師為基準，青銅約 7%、白銀 14%、黃金 27%、白金 45%、鑽石 72%、傳說 100%～160%，段位內勝場越多越強
+ {const M=[.07,.14,.27,.45,.72,1],need=g<6?IM.tx.dan['DW'+(g+1)][1]-IM.tx.dan['DW'+g][1]:60,t=Math.min(1,rel/need),lo=M[g-1],hi=g<6?M[g]:1.6;b.tgt=wdPow(4000)*(lo+(hi-lo)*t*.8)*(1+.12*grdGet(T[1]))}// 本版自訂：戰力以巔峰爭霸一代宗師為基準，青銅約 7%、白銀 14%、黃金 27%、白金 45%、鑽石 72%、傳說 100%～160%，段位內勝場越多越強
  const hs=T[2].filter(h=>h&&HM[h]&&HM[h].st),sb=T[3].filter(h=>h&&HM[h]&&HM[h].st);return{...b,name:T[1],hs,sb,tid:T[0],g,i}}
 function txUnits(b){const E=ljUnits(b);let SBE=[];if(b.sb&&b.sb.length){try{SBE=ljUnits({...b,hs:b.sb}).map((u,k)=>(u.bench=1,u.side=1,u.sbo=k,u))}catch(e){}}
  if(b.tgt){const f=b.tgt/Math.max(1,ljPow(E));for(const u of[...E,...SBE])for(const a of['hp','atk','dp','spd','mp'])u[a]=Math.max(1,Math.round((u[a]||0)*f))}return{E,SBE}}
-let TXPC={};function txVal(b){const k=b.tid+'|'+b.g+'|'+Math.round((b.dep||0)*100)+'|'+(b.P!=null?Math.floor(b.P*100):'');if(!TXPC[k]){try{const{E,SBE}=txUnits(b);TXPC[k]=[Math.round(ljPow(E)/3),Math.round(ljPow(SBE)/3)]}catch(e){TXPC[k]=[0,0]}}return TXPC[k]}
-function txRoll(x,n){const g=x.test?x.dan+1:x.dan,L=IM.tx.lv['DW'+g].map((_,i)=>i).filter(i=>!x.en.some(e=>e&&e.g===g&&e.i===i));const out=[];while(out.length<n&&L.length)out.push({g,i:L.splice(Math.floor(Math.random()*L.length),1)[0]});return out}
+let TXPC={};function txVal(b){const k=b.tid+'|'+b.g+'|'+Math.round((b.dep||0)*100)+'|'+(b.P!=null?Math.floor(b.P*100):'')+'|'+Math.round(b.tgt||0);if(!TXPC[k]){try{const{E,SBE}=txUnits(b);TXPC[k]=[Math.round(ljPow(E)/3),Math.round(ljPow(SBE)/3)]}catch(e){TXPC[k]=[0,0]}}return TXPC[k]}
+function txRoll(x,n){const g=x.test?x.dan+1:x.dan,L=IM.tx.lv['DW'+g].map((_,i)=>i).filter(i=>!x.en.some(e=>e&&e.g===g&&e.i===i));const out=[];/* 記仇的隊伍優先回頭找你 */for(let j=L.length-1;j>=0&&out.length<n;j--){if(grdRipe(IM.tx.lv['DW'+g][L[j]][1])&&Math.random()<.7)out.push({g,i:L.splice(j,1)[0]})}while(out.length<n&&L.length)out.push({g,i:L.splice(Math.floor(Math.random()*L.length),1)[0]});return out}
 function txFill(x){x.en=(x.en||[]).filter(Boolean);if(x.en.length<3)x.en.push(...txRoll(x,3-x.en.length))}
 const txSubWorth=()=>{try{return Object.values(subList()).reduce((a,id)=>a+(S.heroes[id]?heroVal(id):0),0)}catch(e){return 0}};
 // 巔峰榜（傳說段位前 10）：電腦掌門的勝場依賽季經過天數成長
@@ -1864,7 +1874,7 @@ async function txFight(foe,ctx){if(busy)return;const x=txS();if(!S.team.length){
   if(ctx.q!=null){x.q[ctx.q]=win?1:0;if(x.q.length>=3){const w=x.q.filter(Boolean).length;x.dan=w<=1?1:w===2?2:3;x.sc=txDan(x.dan)[1];x.dl=x.dan;x.en=[];msg=`定級完成：${txDan(x.dan)[0]}段位`}}
   else{const D0=txDan(x.dan);gy=win?D0[2]:D0[3];S.items.ID688=(S.items.ID688||0)+gy;if(x.dan>=5)x.cn++;
    if(x.test){if(win){x.dan++;x.sc=txDan(x.dan)[1];x.test=0;x.en=[];msg=`晉級成功！進入${txDan(x.dan)[0]}段位`}else{x.test=0;x.sc=txNeed(x)-1;x.en=[];msg='晉級考試失敗'}}
-   else{if(win){x.sc++;x.lh+=sv;x.en[ctx.e]=null;if(x.dan<6&&x.sc>=txNeed(x)){x.test=1;x.en=[];msg='進入晉級考試！'}}
+   else{if(win)grdAdd(foe.name);else grdDel(foe.name);if(win){x.sc++;x.lh+=sv;x.en[ctx.e]=null;if(x.dan<6&&x.sc>=txNeed(x)){x.test=1;x.en=[];msg='進入晉級考試！'}}
     else{if(txRel(x)<=0&&x.dan>1){x.dan--;x.sc=txNeed(x)-1;x.en=[];msg=`降級為${txDan(x.dan)[0]}段位`}else x.sc=Math.max(txDan(x.dan)[1],x.sc-1)}}
    x.dl=x.dan;x.rec.unshift({n:foe.name,w:win?1:0,gy,t:Date.now()});x.rec=x.rec.slice(0,30)}
   if(ctx.q==null)track('TT_DQ_TIANXIA_ATTACK_'+Math.min(5,x.dan),1);save();render();
