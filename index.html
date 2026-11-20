@@ -6615,8 +6615,12 @@ const EXPI={ID001:3000,ID002:15000};
 const EXPD={ID242:300,ID243:3000,ID244:15000};
 function expUse(t,id){const o=S.heroes[id];if(!o||!(S.items[t]>0))return;if(o.lv>=hCap()){BMSG='';return}S.items[t]--;o.exp=(o.exp||0)+EXPD[t];while(o.lv<hCap()&&o.exp>=need(o.lv)){o.exp-=need(o.lv);o.lv++}if(o.lv>=hCap())o.exp=Math.min(o.exp,need(o.lv)-1);BMSG=`${HM[id].n} 使用${IM.it[t][0]}：經驗 +${EXPD[t]}`;save()}
 function tpBtn(x){const c=IM.tp&&IM.tp[x.t],n=(x.tp||0)+1;if(!c)return'';if(n>20)return'<small class="mut">已進階滿級</small>';const[m,k]=tpNeed(n);return`<button class="tpb" data-tp="${x.u}" ${(S.items[m]||0)<k?'disabled':''}>進階</button><small class="mut">${esc(IM.it[m][0])} ${S.items[m]||0}/${k}・${Math.round(c[n-1][1]*100)}%</small>`}
-function tiliLow(){const ok=S.items.ID005>0;askYes(`掌門，體力不夠啦！\n體力每 30 分鐘恢復 1 點${ok?'。\n要使用叫花雞恢復 10 點體力嗎？':'，也可在商城購買叫花雞恢復。'}`).then(y=>{if(y&&ok){cfEat('tl');render()}})}
-function yqLow(){const ok=S.items.ID006>0;askYes(`掌門，元氣不夠啦！\n元氣每 30 分鐘恢復 1 點${ok?'。\n要使用元氣丹恢復 10 點元氣嗎？':'，也可在商城購買元氣丹恢復。'}`).then(y=>{if(y&&ok){cfEat('yq');render()}})}
+// 體力／元氣不足：有叫花雞／元氣丹就問要不要使用；沒有就問要不要前往元寶商城購買（使用者指定：引導到商城）
+function tiliLow(){const ok=S.items.ID005>0;askYes(`掌門，體力不夠啦！\n體力每 30 分鐘恢復 1 點${ok?'。\n要使用叫花雞恢復 10 點體力嗎？':'。\n要前往商城購買叫花雞嗎？'}`).then(y=>{if(!y)return;if(ok){cfEat('tl');render()}else shGo('ID005')})}
+function yqLow(){const ok=S.items.ID006>0;askYes(`掌門，元氣不夠啦！\n元氣每 30 分鐘恢復 1 點${ok?'。\n要使用元氣丹恢復 10 點元氣嗎？':'。\n要前往商城購買元氣丹嗎？'}`).then(y=>{if(!y)return;if(ok){cfEat('yq');render()}else shGo('ID006')})}
+// 前往元寶商城並捲到指定商品、閃爍提示，接著直接開購買數量視窗
+function shGo(t){if(busy){toast('戰鬥結束後再前往商城');return}document.querySelectorAll('.qypop,.hiov').forEach(e=>e.remove());EVB=null;tab=2;JZT=1;SHT=0;MAPV=false;const x=SHOPY.find(q=>q[0]===t);SHC=x?x[4]:'all';render();window.scrollTo(0,0);
+ setTimeout(()=>{const d=document.querySelector(`#shc [data-shk="${t}"]`);if(!d)return;const bx=d.closest('.shbox');if(bx)bx.scrollLeft=Math.max(0,d.offsetLeft-20);d.style.transition='filter .3s';let n=0;const fl=setInterval(()=>{d.style.filter=n%2?'':'brightness(1.35) drop-shadow(0 0 10px #ffd76a)';if(++n>5){clearInterval(fl);d.style.filter=''}},300);const b=qn(d,'btnBuy');if(b&&!b.disabled)setTimeout(()=>b.click(),900)},400)}
 // 合併版禮包／寶箱：drops 權重全為 0 時全部獲得，否則依權重抽 1 樣（或 openBoxNums 樣）
 function giveDrop(t,n,out){const nm=x=>IM.it[x]?IM.it[x][0]:IM.eq[x]?IM.eq[x][0]:IM.wx[x]?IM.wx[x][0]:IM.fm[x]?IM.fm[x][0]:HM[x]?HM[x].n:x;if(DRL&&!IM.eq[t]&&!(IM.te&&IM.te[t]))DRL.push([t,n]);
  if(t==='IM001'){S.silver+=n;out.push(`銀兩 ${n}`)}else if(t==='IM002'){S.gold=(S.gold||0)+n;out.push(`元寶 ${n}`)}else if(t==='IM004'){S.sw=(S.sw||0)+n;out.push(`聲望 ${n}`)}
