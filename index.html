@@ -3596,11 +3596,12 @@ function hsRoll(R){const x=ssS().L[HSV.id];if(!x){HSV=HSV.back;render();return}R
   const cc=qn(R,'ccTick'+i);if(cc&&spc){pe2(cc).onclick=()=>{HSV.tick=HSV.tick===i-1?-1:i-1;render()}}}
  if(rg&&(HSV.it==='ID1316'||HSV.it==='ID1417'))for(let i=x.a.length+1;i<=8;i++){}// 高級洗煉會重洗條數
  const act=HSV.tick>=0;qshow(R,'labelRoll',!act);qshow(R,'labelActivate',act);
- const sl=qn(R,'mcSlotList');sl.innerHTML='';sl.style.overflowY='auto';sl.style.pointerEvents='auto';qshow(R,'txtNoGems',!its.length);qtx(R,'txtNoGems','當前沒有可用於洗煉魂石的道具');
+ const sl=qn(R,'mcSlotList');sl.innerHTML='';sl.style.overflowY='auto';sl.style.overflowX='hidden';sl.classList.add('nosb');sl.style.pointerEvents='auto';qshow(R,'txtNoGems',!its.length);qtx(R,'txtNoGems','當前沒有可用於洗煉魂石的道具');
  its.forEach((k,i)=>{const I=IM.it[k];const d=document.createElement('div');d.className='qa';d.style.cssText=`left:4px;top:${i*116}px;width:332px;height:114px`;d.innerHTML=`<div class="qa" style="left:0;top:-526px;width:340px;height:640px">${QY.L.hs_rolln}</div>`;sl.appendChild(d);const N=d.firstChild;
   qtx(N,'labelItemName',I?I[0]:k);['A','B','C','D'].forEach((g,j)=>qshow(N,'mcGrade'+g,(I?I[1]:3)===3-j));qtx(N,'labelCount','數量:');qtx(N,'txtCount',S.items[k]||0);qhide(N,'characterLian','spGems');
   qAdd(N,I?itIco(I[4],86):'',{l:14,t:540,w:86,h:86});const can=k!=='ID1319';qshow(N,'tickSlot',can);qshow(N,'mcTick',can&&HSV.it===k);
-  if(can){d.style.cursor='pointer';d.style.pointerEvents='auto';/* .qa 預設不吃點擊，要打開才點得到洗煉丹 */d.onclick=()=>{HSV.it=HSV.it===k?null:k;HSV.tick=-1;render()}}});
+  if(can){d.style.cursor='pointer';d.style.pointerEvents='auto';/* .qa 預設不吃點擊，要打開才點得到洗煉丹 */d.onclick=()=>{HSV.sst=sl.scrollTop;HSV.it=HSV.it===k?null:k;HSV.tick=-1;render()}}});
+ /* 選了洗煉丹重畫後，清單停在原本捲動的位置（不要跳回最上面） */if(HSV.sst)sl.scrollTop=HSV.sst;
  pe2(qn(R,'btnRoll')).onclick=()=>ssDo(x)}
 async function ssDo(x){if(HSV.tick>=0){const e=x.a[HSV.tick];if(!e||e[2]){toast('不需要激活');return}if(!(S.items.ID1319>0)){toast('魂石仙靈不足。');return}if(!await askYes('您將消耗<魂石仙靈>激活該屬性，確定嗎？'))return;S.items.ID1319--;e[2]=1;HSV.tick=-1;save();toast('魂石屬性激活成功');render();return}
  const it=HSV.it;if(!it){toast('請選擇魂石洗煉丹');return}if(!(S.items[it]>0)){toast(`${IM.it[it][0]}不足`);return}
@@ -4127,9 +4128,9 @@ function zxFill(R,close){const P=zxP();if(!P){close();toast('招賢榜已結束'
  qtx(R,'str_ui_418','送禮招賢');qtx(R,'str_ui_419','美酒');qtx(R,'txt_a_zhaoxianbang_ui3_29_Num',`x${ZXW}（擁有 ${S.items.ID009||0}）`);qtx(R,'txtYuanbao',S.gold||0);
  [['btnEvent',0],['btnNormal',1]].forEach(([b,k])=>{const e=pe2(qn(R,b));if(e){e.style.cursor='pointer';e.style.filter=z.tab===k?'brightness(1.25)':'brightness(.75)';e.onclick=()=>{z.tab=k;zxFill(R,close)}}});
  qshow(R,'ccbEvent',ev);qshow(R,'ccbNormal',!ev);qtx(R,'str_event_end_time','活動結束時間');qtx(R,'txtCd',evLeft(P.end));
- {const N=qn(R,'ccbNormal');if(N){qtx(N,'str_ui_420','送禮招賢可隨機獲得1-3個魂魄');qtx(N,'str_ui_416','剩餘刷新時間:');const ms=new Date().setHours(24,0,0,0)-Date.now();qtx(N,'txtTime',Math.floor(ms/36e5));qtx(N,'txtDay','小時');qtx(N,'str_ui_417','立即刷新花費招賢令:');qtx(N,'txtGold',ZXRF);
+ {const N=qn(R,'ccbNormal');if(N){qtx(N,'str_ui_420','送禮招賢可隨機獲得1-3個魂魄');qtx(N,'str_ui_416','剩餘刷新時間:');const ms=new Date().setHours(24,0,0,0)-Date.now();qhide(N,'txtTime','txtDay','txtGold');qtx(N,'str_ui_417','立即刷新花費:');/* 原版文字「立即刷新花費:」後面接招賢令圖示與數量；數字改用一般字型顯示 */qAdd(N,`<span class="nobm" style="display:flex;align-items:center;height:100%;font:900 20px 'Noto Sans TC',sans-serif;color:rgb(186,50,26);white-space:nowrap">${Math.floor(ms/36e5)} 小時</span>`,{l:222,t:-74,w:150,h:28});qAdd(N,`<span class="nobm" style="display:flex;align-items:center;height:100%;font:900 20px 'Noto Sans TC',sans-serif;color:#222;white-space:nowrap">×${ZXRF}（擁有 ${S.items.ID069||0}）</span>`,{l:256,t:-43,w:200,h:28});
   const b=pe2(qn(N,'btnRefresh'));if(b){b.style.cursor='pointer';b.onclick=()=>{if((S.items.ID069||0)<ZXRF){toast('招賢令（尋俠令）不足');return}S.items.ID069-=ZXRF;z.rf++;save();toast('招賢榜已刷新');zxFill(R,close)}}}}
- H.forEach((h,i)=>{const N=qn(R,'mcSoul_'+(i+1));if(!N)return;qshow(N,'mcHide',0);qtx(N,'txtSoul',`${HM[h].n}\n魂魄 ${S.souls[h]||0}`);const ic=qAdd(N,`<span style="${icnStyle(h,86)};display:block;width:86px;height:86px"></span>`,{l:16,t:-104,w:86,h:86});ic.style.pointerEvents='auto';ic.style.cursor='pointer';ic.title=HM[h].n;ic.onclick=()=>{try{hsOpen({m:'hero',h})}catch(e){}}});
+ H.forEach((h,i)=>{const N=qn(R,'mcSoul_'+(i+1));if(!N)return;qshow(N,'mcHide',0);/* txtSoul 在原版是左上角的「魂」字標記；名稱與持有魂魄數改成頭像下緣的一條字（不佔用外面的版面） */qAdd(N,`<div class="nobm" style="display:flex;align-items:center;justify-content:center;height:100%;background:rgba(0,0,0,.6);border-radius:0 0 6px 6px;font:900 13px 'Noto Sans TC',sans-serif;color:#fff;white-space:nowrap"><span style="color:${['#e8e8e8','#7dff8a','#8cc8ff','#e9a0ff'][HM[h].r||0]}">${esc(HM[h].n)}</span>&nbsp;<span style="color:#ffe08a">${S.souls[h]||0}</span></div>`,{l:15,t:-37,w:86,h:22}).style.zIndex=3;const ic=qAdd(N,`<span style="${icnStyle(h,86)};display:block;width:86px;height:86px"></span>`,{l:16,t:-104,w:86,h:86});ic.style.pointerEvents='auto';ic.style.cursor='pointer';ic.title=HM[h].n;ic.onclick=()=>{try{hsOpen({m:'hero',h})}catch(e){}}});
  req.forEach((t,i)=>{const N=qn(R,'mcItem'+(i+1));if(!N)return;const ok=zxOwn(t);qtx(N,'txtName',zxNm(t));qtx(N,'txtNum','x1');qhide(N,'characterLian','spGems');const f=N.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(f){const g=IM.eq[t]?IM.eq[t][2]:IM.wx[t]?IM.wx[t][3]:0;qAdd(N,gbIco(t),qBox(f,15))}
   const b=pe2(qn(N,'btnAccept'));if(b){b.style.cursor='pointer';b.style.filter=ok?'':'grayscale(1)';b.title=ok?'交出此物品送禮招賢':'沒有此閒置物品';b.onclick=()=>zxGo(R,close,t,H)}});
  // 美酒那一列（不在 mcItem 內的 btnAccept）
@@ -4183,8 +4184,8 @@ function hmView(mc){const P=hmP();if(!P){mc.innerHTML='<p class="qyhint nobm" st
  HMT.forEach(([b,ty,nm])=>{const e=pe2(qn(mc,b));if(e){e.style.cursor='pointer';e.style.filter=h.tab===ty?'brightness(1.2)':'brightness(.8)';e.onclick=()=>{h.tab=ty;render()}}});
  const L=HML.filter(x=>x[1]===h.tab),sc=qn(mc,'mcScrollView'),b=qBox(sc),box=qAdd(mc,'',b);Object.assign(box.style,{overflowX:'auto',overflowY:'hidden',pointerEvents:'auto',scrollbarWidth:'none'});dragPan(box);
  if(!L.length){box.innerHTML='<p class="nobm" style="text-align:center;padding-top:60px;font:700 20px sans-serif;color:#5a3412">本期沒有可兌換的項目</p>';return}
- const inner=document.createElement('div');inner.style.cssText=`position:relative;width:${L.length*240}px;height:${b.h}px`;box.appendChild(inner);
- L.forEach(([tid,ty,fr,[to,tn],tm],i)=>{const used=h.n[tid]||0,left=tm>=9999?Infinity:tm-used,ok=left>0&&fr.every(([t,n])=>hmHave(t)>=n);const c=document.createElement('div');c.className='qa';c.style.cssText=`left:${i*240}px;top:0;width:238px;height:${b.h}px`;c.innerHTML=QY.L.hmn;inner.appendChild(c);
+ /* 奇遇內容區寬約 928，原版一頁剛好放 4 張卡（960 寬）：整排依內容區寬度等比例縮小，4 張卡完整顯示不被切到 */const hs=Math.min(1,b.w/960);const inner=document.createElement('div');inner.style.cssText=`position:relative;width:${L.length*240*hs}px;height:${b.h}px`;box.appendChild(inner);
+ L.forEach(([tid,ty,fr,[to,tn],tm],i)=>{const used=h.n[tid]||0,left=tm>=9999?Infinity:tm-used,ok=left>0&&fr.every(([t,n])=>hmHave(t)>=n);const c=document.createElement('div');c.className='qa';c.style.cssText=`left:${i*240*hs}px;top:0;width:238px;height:${b.h}px;transform:scale(${hs});transform-origin:0 0`;c.innerHTML=QY.L.hmn;inner.appendChild(c);
   qtx(c,'txtName',dsNm(to));qtx(c,'txtCount','x'+tn);qhide(c,'mcActiveBg','mcEmpty','mcSoul','mcPart','txtLevel');const ic=qn(c,'mcIcon');if(ic){ic.style.background='none';ic.innerHTML=gbIco(to);Object.assign(ic.style,{pointerEvents:'auto',cursor:'pointer'});ic.onclick=e=>{e.stopPropagation();sfx('button');dropTip(to)}}
   qAdd(c,`<div class="nobm" style="font:700 14px ${FBA};color:${ok?'#1d6a2a':'#9a3a2a'};text-align:center;line-height:17px;display:flex;flex-direction:column;justify-content:center;height:100%"><span>${fr.map(([t,n])=>`${dsNm(t)}×${n}`).join('、')}</span><span style="color:#6a4a22">${tm>=9999?'不限次數':`剩餘 ${left}/${tm} 次`}</span></div>`,{l:23,t:219,w:200,h:44});
   const go=async()=>{if(left<=0){toast('兌換次數已用完');return}const miss=fr.filter(([t,n])=>hmHave(t)<n);if(miss.length){toast('材料不足：'+miss.map(([t,n])=>`${dsNm(t)}×${n}`).join('、'));return}if(!(await askYes(`用 ${fr.map(([t,n])=>`${dsNm(t)}×${n}`).join('、')} 兌換「${dsNm(to)}×${tn}」？`,'以物換物')))return;fr.forEach(([t,n])=>hmTake(t,n));h.n[tid]=used+1;const out=[];giveDrop(to,tn,out);save();toast('兌換成功：'+out.join('、'));render()};
@@ -6916,7 +6917,7 @@ const SHOPY=[['IB065',80,0,1,'package'],['IK065',100,0,1,'package'],['IB066',50,
 
 const SHHIDE=t=>{const x=SHOPY.find(q=>q[0]===t);return !!(x&&x[1]>=3000&&x[5])};
 // ---- 本版自訂（使用者指定）：商城不定期限時販售與特價 ----
-// 每月以年月為種子排出 1～2 檔「限時販售」，每檔 3 天（每月至少一檔）：新角色（招募帖／自選箱）、該角色的緣分裝備箱（沒有就隨機一箱）、甲級陣法陣圖，各 3000～5000 元寶。
+// 每月以年月為種子排出 1～2 檔「限時販售」，每檔 3 天（每月至少一檔）：新角色（招募帖／自選箱）與甲級陣法陣圖各 3000～5000 元寶；該角色的緣分裝備箱（沒有就隨機一箱）為 3500 元寶 × 箱內件數。
 // 另排 3 段「不定期特價」（每段 2～3 天）：從寶盒／鑰匙／魂石系列／通心丸／神煉牌／駐顏丹中挑 3 樣打 7～8 折（照高級戰鼓的特價顯示原價）。
 // 已擁有弟子的駐顏丹常駐上架：一般 1000 元寶，絕／傲／明／龍等系列 1500 元寶（「1000 起跳」的分級為本版推定）。
 const SHB0=SHOPY.length,SHBP=SHOPY.map(x=>[x[1],x[2]]);
@@ -6927,7 +6928,7 @@ function shRng(n){let a=n>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>
 function shPlan(y,m){const R=shRng(y*100+m+7771),dim=new Date(y,m+1,0).getDate(),pick=a=>a[Math.floor(R()*a.length)],pr=()=>3000+500*Math.floor(R()*5);
  const ev=[],ne=1+(R()<.5?1:0),used=new Set();for(let k=0;k<ne;k++){let d0,g=0;do{d0=1+Math.floor(R()*(dim-2))}while(g++<50&&[...used].some(u=>Math.abs(u-d0)<4));used.add(d0);
   const c=pick(SHEVC.filter(t=>IM.it[t])),cn=(IM.it[c]||[''])[0].replace(/(招募帖|自選箱|弟子箱)$/,''),eq=SHEVE.find(t=>IM.it[t]&&IM.it[t][0].startsWith(cn))||pick(SHEVE.filter(t=>IM.it[t])),fz=pick(Object.keys(IM.it).filter(t=>/^IFZA/.test(t)));
-  ev.push({a:new Date(y,m,d0).getTime(),b:new Date(y,m,d0+3).getTime(),it:[[c,pr()],[eq,pr()],[fz,pr()]]})}
+  const ec=((IM.drp&&IM.drp[eq]&&IM.drp[eq][0])||[]).reduce((n,x)=>n+(x[1]||1),0)||5;/* 使用者指定：特殊角色緣分裝備箱＝3500 元寶 × 箱內件數 */ev.push({a:new Date(y,m,d0).getTime(),b:new Date(y,m,d0+3).getTime(),it:[[c,pr()],[eq,3500*ec],[fz,pr()]]})}
  const sl=[];for(let k=0;k<3;k++){const d0=1+Math.floor(R()*(dim-2)),L=2+Math.floor(R()*2),z=[];while(z.length<3){const t=pick(SHSALE.concat(['ZY']));if(!z.includes(t))z.push(t)}sl.push({a:new Date(y,m,d0).getTime(),b:new Date(y,m,d0+L).getTime(),it:z,k:R()<.5?.8:.7})}
  return{ev,sl}}
 function shDyn(){SHOPY.length=SHB0;SHOPY.forEach((x,i)=>{x[1]=SHBP[i][0];x[2]=SHBP[i][1];x[7]=0});
