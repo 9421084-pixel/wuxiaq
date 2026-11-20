@@ -3166,7 +3166,7 @@ function reward(d,i,first){
  if(d===0&&i===2&&first&&typeof ftOn==='function'&&ftOn()&&!S.eq.some(x=>IM.eq[x.t]&&IM.eq[x.t][1]==='weapon'))addEq('ED999',out);/* 原作新手教學：第 3 回（苗族少女，原作掉落鐵劍）必掉鐵劍 */
  if(d===2)zsDrop(out);else if(d===1)gsDrop(out);
  // 使用者指定的元寶掉落（機率為本版自訂：極低＝0.2%、低＝0.5%，使用者要求狂刷約 3～5 天才能累積 3000 元寶；數量越多越稀有）：高手首領／頭目關 0.2% 掉 50～500；宗師首領／頭目關 0.5% 掉 500～3000；宗師一般關 0.2% 掉 5～100
- {const yb=d===1&&L.ty>0?[.002,50,500]:d===2&&L.ty>0?[.005,500,3000]:d===2?[.002,5,100]:null;if(yb&&Math.random()<yb[0])giveDrop('IM002',ybRoll(yb[1],yb[2]),out)}
+ {/* 使用者指定：元寶掉落機率提高 50 倍（高手首領 10%、宗師首領 25%、宗師一般關 10%） */const yb=d===1&&L.ty>0?[.1,50,500]:d===2&&L.ty>0?[.25,500,3000]:d===2?[.1,5,100]:null;if(yb&&Math.random()<yb[0])giveDrop('IM002',ybRoll(yb[1],yb[2]),out)}
  // 原作：血書在副本掉落（不影響正常掉落）；機率 15% 為本版自訂
  if(qyLv()>=9&&Math.random()<.15)addItem('ID013',1,out);
  // 隱藏甲等俠客：首領關 1%、頭目關 0.5% 掉落其中一位的魂（本版自訂）
@@ -4885,7 +4885,7 @@ function mjFight(k){const q=mjQ(),r=q.run;if(!r||busy||r.pend)return;if(!S.team.
  const f=mjFoes(k,r.n),A=myTeam().map(u=>mjBoost(u,r.bo));let quick=false;if(q.q&&ykLv()>=2&&(S.items.ID189||0)>0){S.items.ID189--;quick=true}
  SKIP=quick;busy=true;const b=sim(null,f.E,A);EVB={b,k,f:r.n+1,name:f.name,done:null};render();
  playBattle(b,()=>{busy=false;EVB.done=mjAfter(b,k);save();render()})}
-const MJYB=.1;
+const MJYB=1/* 使用者指定：50 倍，上限 100% */;
 function mjDrop(t,out){const[ch,ls]=t;if(Math.random()>=ch)return;const tot=ls.reduce((a,x)=>a+x[2],0);let v=Math.random()*tot;for(const[id,n,w]of ls){v-=w;if(v<0){if(IM.it[id]){addItem(id,n);out.push([id,n])}return}}}
 function mjAfter(b,k){const q=mjQ(),r=q.run,M=QY.T.mj[k];
  if(!b.win){const rep={win:0,rr:starRate(b),n:r.n,k:r.k};mjKeep(q,r);q.run=null;MJV=false;return rep}
