@@ -3600,7 +3600,7 @@ function hsRoll(R){const x=ssS().L[HSV.id];if(!x){HSV=HSV.back;render();return}R
  its.forEach((k,i)=>{const I=IM.it[k];const d=document.createElement('div');d.className='qa';d.style.cssText=`left:4px;top:${i*116}px;width:332px;height:114px`;d.innerHTML=`<div class="qa" style="left:0;top:-526px;width:340px;height:640px">${QY.L.hs_rolln}</div>`;sl.appendChild(d);const N=d.firstChild;
   qtx(N,'labelItemName',I?I[0]:k);['A','B','C','D'].forEach((g,j)=>qshow(N,'mcGrade'+g,(I?I[1]:3)===3-j));qtx(N,'labelCount','數量:');qtx(N,'txtCount',S.items[k]||0);qhide(N,'characterLian','spGems');
   qAdd(N,I?itIco(I[4],86):'',{l:14,t:540,w:86,h:86});const can=k!=='ID1319';qshow(N,'tickSlot',can);qshow(N,'mcTick',can&&HSV.it===k);
-  if(can){d.style.cursor='pointer';d.onclick=()=>{HSV.it=HSV.it===k?null:k;HSV.tick=-1;render()}}});
+  if(can){d.style.cursor='pointer';d.style.pointerEvents='auto';/* .qa 預設不吃點擊，要打開才點得到洗煉丹 */d.onclick=()=>{HSV.it=HSV.it===k?null:k;HSV.tick=-1;render()}}});
  pe2(qn(R,'btnRoll')).onclick=()=>ssDo(x)}
 async function ssDo(x){if(HSV.tick>=0){const e=x.a[HSV.tick];if(!e||e[2]){toast('不需要激活');return}if(!(S.items.ID1319>0)){toast('魂石仙靈不足。');return}if(!await askYes('您將消耗<魂石仙靈>激活該屬性，確定嗎？'))return;S.items.ID1319--;e[2]=1;HSV.tick=-1;save();toast('魂石屬性激活成功');render();return}
  const it=HSV.it;if(!it){toast('請選擇魂石洗煉丹');return}if(!(S.items[it]>0)){toast(`${IM.it[it][0]}不足`);return}
