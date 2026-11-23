@@ -2081,7 +2081,7 @@ function rdAfter(b,id,quick){const r=rdS(),R=r.run,L=rdL(id);const win=b.win||L[
  const out=[];rdDrops(L,R.mult,out,b);R.rec[R.d].push([R.i+1,out.map(x=>`${x[0]}×${x[1]}`).join('、')||'無',L[0]]);const lot=L[0]==='boss'?rdLottery(R.d):null;R.i++;save();if(quick)return out;
  if(lot)rdFanpai(lot,out);else if(L[0]==='nainiu')rdNainiu(out,b,L);else rdBonus(out)}
 function rdLottery(d){const T=RDT().lot,dr=rdPickW(T,x=>x[2][d]),sh=[rdPickW(T,x=>x[3][d]),rdPickW(T,x=>x[3][d])];return{dr,sh}}
-function rdNext(){const R=rdS().run;if(!R)return;if(R.i>=RDT().st[R.d].length){rdHallEnd(true);return}rdFight()}
+function rdNext(){const R=rdS().run;if(!R)return;/* 沒有風雲戰鬥在進行卻卡著忙碌狀態（例如切到背景中斷），解除後才能繼續 */if(busy&&!(EVB&&!EVB.done))busy=false;tab=9;MAPV=false;RDV='fight';if(R.i>=RDT().st[R.d].length){rdHallEnd(true);return}rdFight()}
 const rdIco=(n,html)=>{const f=n&&n.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(!f||!html)return;qAdd(f.parentElement,html,qBox(f,15));['spItemFrame','txtNum','txtLevel'].forEach(k=>{const e=qn(n,k);if(e)e.parentElement.appendChild(e)})};
 const rdName=t=>({IM001:'銀兩',IM002:'元寶',IM004:'聲望'})[t]||(IM.it[t]?IM.it[t][0]:IM.eq[t]?IM.eq[t][0]:t);
 const rdIcn=(t,z)=>{const ix=t==='IM001'?-2:t==='IM002'?-3:IM.it[t]?IM.it[t][4]:IM.eq[t]?IM.eq[t][8]:-1;if(ix===-2)return qaImg('IM001_icn',z);if(ix===-3)return qaImg('IM002_icn',z);return ix>=0?itIco(ix,z):''};
@@ -2526,7 +2526,7 @@ function ydRestart(){const d=ydS();const go=()=>{d.run=ydNew();save();YDV='maze'
  askYes(`是否使用琅琊秘鑰 * 1刷新玉洞？\n（今日剩餘刷新次數：${YD.play.useLimit-d.key}次）`,'重新開始').then(y=>{if(!y)return;if(!(S.items[k]>0)){toast('琅琊秘鑰不足，不能刷新玉洞');return}S.items[k]--;if(!S.items[k])delete S.items[k];d.key++;go()})}
 function ydOpen(){if(qyLv()<32){toast('門派等級32級開啟琅琊玉洞');return}qyLoad().then(ydLoad).then(()=>{ydS();YDV='main';tab=11;MAPV=false;render();window.scrollTo(0,0)}).catch(()=>toast('琅琊玉洞資料載入失敗'))}
 function ydView(){if(EVB&&EVB.kind==='yd'&&!EVB.done)return`<div class="card qyb">${canvasTag}<div id="log"></div></div>`;if(!YD)return'';const lay=YDV==='maze'&&ydRun()?QY.L.ydq:YDV==='shop'?QY.L.ydh:QY.L.ydm;return`<div class="qyw"><div class="scl qyr" data-w="960" data-h="640"><div class="scli qy" id="ydi">${lay}</div></div></div>`}
-function ydAfter(){if(EVB&&EVB.kind==='yd'&&!EVB.done){scene(EVB.b,EVB.bg||'bg_shidong',{l:S.sect,r:EVB.name});return}const R=document.getElementById('ydi');if(!R||!YD)return;const d=ydS(),home=()=>{tab=0;MAPV=true;render()};
+function ydAfter(){if(EVB&&EVB.kind==='yd'&&!EVB.done){scene(EVB.b,EVB.bg||'bg_shidong',{l:S.sect,r:EVB.name});return}const R=document.getElementById('ydi');if(!R||!YD)return;const d=ydS(),home=()=>{tab=0;MAPV=true;render();setTimeout(jhPop,0)};/* 關閉玉洞回到「副本活動」視窗（從那裡進來的上一頁） */
  const own=S.items.IM009||0;
  if(YDV==='shop'){ydShop(R);bmApply(R);layoutScl();return}
  if(YDV==='maze'&&d.run){const r=d.run;pe2(qn(R,'btnClose')).onclick=()=>{YDV='main';render()};pe2(qn(R,'btnHelp')).onclick=ydRule;
@@ -3731,7 +3731,7 @@ function chXgPop(){const M=chMerged();if(!M.some(g=>Object.keys(g).length)){toas
  W('bbFight',o=>function(){const b0=busy;const r=o.apply(this,arguments);if(!b0&&busy)track('TT_DQ_CANTLOSS');return r});
  W('ljFight',o=>function(){const b0=busy;const r=o.apply(this,arguments);if(!b0&&busy)track('TT_DQ_LUNJIAN');return r});
  W('pvRob',o=>function(){const b0=busy;const r=o.apply(this,arguments);if(!b0&&busy)track('TT_DQ_ROB');return r});
- W('xlTrain1',o=>function(){const r=o.apply(this,arguments);if(r)track('TT_DQ_XIULIAN');return r});
+ W('xlTrain1',o=>function(){const r=o.apply(this,arguments);if(r)track('TT_DQ_XIULIAN');return r});W('xlStart',o=>function(){/* 修煉場（三選一）每修煉一次也算每日修煉 */let g0=null;try{const g=XLG();g0=g.s[XLSEL]}catch(e){}const r=o.apply(this,arguments);try{const g=XLG();if(!g0&&g.s[XLSEL])track('TT_DQ_XIULIAN')}catch(e){}return r});
  W('ybHis',o=>function(y,h){if(h&&(h.type==='rob'||h.type==='robLose')){track('TT_DQ_YUNBIAO_COMBAT');if(h.type==='rob')track('TT_DQ_YUNBIAO_COMBAT_WIN')}return o.apply(this,arguments)});
  W('recruit',o=>function(k,times){const g0=S.gold,r=o.apply(this,arguments);if(S.gold!==g0||true){if(k===1)track('TT_DQ_XUNXIA_BAILI',times||1);if(k===2)track('TT_DQ_XUNXIA_WANILI',times||1)}return r});
  W('eqUp',o=>function(){const k=o.apply(this,arguments);if(k)track('TT_UPGRADE_EQUIP',k);return k});
@@ -7908,7 +7908,7 @@ function hbCompact(){const A=document.getElementById('app');if(!A||!A.querySelec
 let DISC_DONE=false,DISC_RUN=false;
 const DISC_T=['本作品為利用火谷公司智慧財產權進行的非營利復刻創作，為非官方粉絲作品，與火谷公司無任何關聯，亦非其官方授權產品，禁止以營利為目的使用本作品。','本遊戲為非官方、非營利同人作品，未經授權使用金庸、古龍作品中的角色名稱，相關角色名稱之著作權歸原作者及其權利繼承人所有，本作品與原著作權利人無關，亦非官方產品。'];
 /* 使用者指定：版權宣告右下角「今日不再提醒」，勾選後當天不再顯示（隔天自動恢復） */const DISC_DAY=()=>new Date().toDateString();
-function disclaim(done){try{if(localStorage.getItem('xzm_discday')===DISC_DAY()){done();return}}catch(e){}const ov=document.createElement('div');ov.id='discov';ov.style.cssText='position:fixed;inset:0;z-index:20001;background:#000;display:flex;align-items:center;justify-content:center;cursor:default';
+function disclaim(done){let skip=false;try{skip=localStorage.getItem('xzm_discday')===DISC_DAY()}catch(e){}if(skip){done();return}/* done() 放在 try 外面，避免 render 出錯被吞掉後又顯示宣告 */const ov=document.createElement('div');ov.id='discov';ov.style.cssText='position:fixed;inset:0;z-index:20001;background:#000;display:flex;align-items:center;justify-content:center;cursor:default';
  const t=document.createElement('div');t.className='disct';ov.appendChild(t);document.body.appendChild(ov);let i=0,tm=[],canTap=false;const T=(f,ms)=>tm.push(setTimeout(f,ms));
  const show=()=>{tm.forEach(clearTimeout);tm=[];canTap=false;t.textContent=DISC_T[i];t.style.transition='opacity 1.2s ease';t.style.opacity='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{t.style.opacity='1'}));T(()=>{canTap=true},2200);T(hide,6200)};
  const hide=()=>{tm.forEach(clearTimeout);tm=[];canTap=false;t.style.transition='opacity 1s ease';t.style.opacity='0';T(()=>{i++;if(i<DISC_T.length)T(show,500);else{ov.remove();done()}},1000)};
