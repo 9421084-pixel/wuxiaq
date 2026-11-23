@@ -7720,7 +7720,7 @@ let CHQ=0,CHQT=null;function bagQty(t,max,fn){if(max<=1){fn();return}let q=1;qyP
 // 原作的 BUG 回報、QQ 群、兌換碼在單機版沒有用處，改放本版功能：戰鬥速度、門派更名、新手教學（文字為本版自訂）。
 function openSettings(){if(!QY){qyLoad().then(openSettings).catch(()=>openSettings0());return}
  qyPop('sz',(R,close)=>{const tick=()=>{qshow(R,'tickMusic',SND.m);qshow(R,'tickSfx',SND.s)};tick();
-  const lab=(hide,txt,cx,cy)=>{if(hide){const e=R.querySelector(`[data-im="${hide}"]`);if(e)e.style.display='none'}const d=qAdd(R,'',{l:cx-170,t:cy-22,w:340,h:44});Object.assign(d.style,{display:'flex',alignItems:'center',justifyContent:'center'});const o={set textContent(v){d.innerHTML=v?gtImg(v,300,null,27):''},get el(){return d},set opa(v){d.style.opacity=v}};o.textContent=txt;return o};/* 使用者指定：設置按鈕文字改用與「返回登錄介面」相同的金字 */
+  const lab=(hide,txt,cx,cy)=>{if(hide){const e=R.querySelector(`[data-im="${hide}"]`);if(e)e.style.display='none'}const d=qAdd(R,'',{l:cx-170,t:cy-22,w:340,h:44});Object.assign(d.style,{display:'flex',alignItems:'center',justifyContent:'center'});const SZI={'匯入存檔':'drcd','匯出存檔':'dccd','跳過片頭動畫':'tgpt','關閉新手教學':'gbjx'};const o={set textContent(v){d.innerHTML=!v?'':SZI[v]?`<img src="a/ui/sz/${SZI[v]}.webp" alt="${v}" style="height:36px;width:auto">`:gtImg(v,300,null,27)},/* 預先做好的字圖（與「返回登錄介面」同樣的米黃字、深色描邊） */get el(){return d},set opa(v){d.style.opacity=v}};o.textContent=txt;return o};/* 使用者指定：設置按鈕文字改用與「返回登錄介面」相同的金字 */
   const spd=lab('art_font_btn_bug','',290,424),gm=lab('art_font_btn_qqqun','跳過片頭動畫',338,551),ft=lab('art_font_btn_cd','',671,423);qhide(R,'mcBugReport');
   const upd=()=>{spd.textContent='匯入存檔';ft.textContent=ftOn()&&ftCanSkip()?'關閉新手教學':'匯出存檔'};upd();/* 使用者指定：「戰鬥速度」改為「匯入存檔」（戰鬥速度仍可在戰鬥畫面右上切換） */
   const on=(n,f)=>{const b=qn(R,n);if(b)pe2(b).onclick=f};
