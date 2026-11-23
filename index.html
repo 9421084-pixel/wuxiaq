@@ -2857,13 +2857,13 @@ function xlDetail(id){const o=S.heroes[id],P=o.xl||{};qyPop('xu3',(R,close)=>{pe
 // 心情藥（UseHeartDrugView）與成功率藥（UseWuxingDrugView）
 function xlDrug(kind,id){const o=S.heroes[id],L=kind==='h'?['ID080','ID023']:['ID012','ID011'],lay=kind==='h'?'xuxt':'xuhf';
  qyPop(lay,(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;const fill=()=>{if(kind==='h'){qtx(R,'txtTitle','恢復心情狀態');const h=Math.round(xlHeart(o));qtx(R,'txtCurStatus','當前心情狀態：');qtx(R,'txtCurStatusVal',h);qtx(R,'txtEfxDesc','需先將弟子心情恢復至天人合一！');
-   const low=h<-10;['txtCurStatus','spHeart','txtCurStatusVal','txtCurStatusFrame'].forEach(k=>qshow(R,k,!low));['spCurStatusIcon','spGreenArrow','spTargetStatus','txtEfxDesc'].forEach(k=>qshow(R,k,low));const ci=qn(R,'spCurStatusIcon');if(ci)qIm(ci,['ui_icn_xl_l_di_5','ui_icn_xl_l_di_4','ui_icn_xl_l_di_3','ui_icn_xl_l_di_2','ui_icn__xl_l_di_1'][xlStatus(o)])}
+   const low=h<=-10;['txtCurStatus','spHeart','txtCurStatusVal','txtCurStatusFrame'].forEach(k=>qshow(R,k,!low));['spCurStatusIcon','spGreenArrow','spTargetStatus','txtEfxDesc'].forEach(k=>qshow(R,k,low));const ci=qn(R,'spCurStatusIcon');if(ci)qIm(ci,['ui_icn_xl_l_di_5','ui_icn_xl_l_di_4','ui_icn_xl_l_di_3','ui_icn_xl_l_di_2','ui_icn__xl_l_di_1'][xlStatus(o)])}
   else{qtx(R,'str_ui_214','恢復狀態');qtx(R,'str_ui_215','當前修煉成功率:');qtx(R,'txtSuccessRate',Math.round(xlRate(o,D.xl.it[XLG().a[XLSEL]])*100)+'%')}
   L.forEach((t,i)=>{const n=i+1,I=IM.it[t],hv=S.items[t]||0,price=(SHOPY.find(x=>x[0]===t)||[0,0])[1];qtx(R,'txtItemName'+n,I[0]);qtx(R,'txtDrugDesc'+n,I[3]||I[2]);qtx(R,'txtSellPrice'+n,'售價:');qtx(R,'txtSellPrice','售價:');qtx(R,'txtPrice'+n,price);qtx(R,'txtRemainNum'+n,`(${hv})`);
    ['txtDrugDesc'+n].forEach(k=>{const e=qn(R,k);if(e){e.style.whiteSpace='nowrap';e.style.fontSize='16px';e.classList.add('nobm')}});
    const ic=qn(R,'spItemIcon'+n);if(ic&&!ic.dataset.done){ic.dataset.done=1;ic.style.display='none';qAdd(ic.parentElement,itIco(I[4],86),qBox(ic))}
    qshow(R,'btnUse'+n,hv>0);qshow(R,'txtUse'+n,hv>0);qshow(R,'txtRemainNum'+n,hv>0);qshow(R,'btnBuyUse'+n,hv<=0);qshow(R,'txtBuyUse'+n,hv<=0);
-   const use=buy=>{if(kind==='h'&&xlHeart(o)>=0){toast('現在心情很好，無需吃藥！');return}
+   const use=buy=>{if(kind==='h'&&xlHeart(o)>=100){toast('心情已達上限 100，無需吃藥！');return}
     if(buy){if((S.gold||0)<price){toast('元寶不足');return}vipPay(price);S.items[t]=(S.items[t]||0)+1}xlUse(id,t);save();toast(buy?'購買並使用成功！':'使用成功！');fill();render()};
    pe2(qn(R,'btnUse'+n)).onclick=()=>use(false);pe2(qn(R,'btnBuyUse'+n)).onclick=()=>use(true)})};fill()})}
 // ---------- 穴位升級（原作 HeroJingmaiUpgradeView：UI_hero/a_xueweishengji_ui）與易經換脈（HeroYiJingHuanMaiView：a_hero_jingmaiqianghua_pop）----------
@@ -5864,7 +5864,7 @@ function xlTabAfter(id){const o=S.heroes[id];if(!o||!QY)return;{const H=document
   {const a=qn(P,'btnReduceExAttr'),b=qn(P,'btnReduceSpeAttr');if(a)pe2(a).onclick=()=>xlReduce(id,'ex');if(b)pe2(b).onclick=()=>xlReduce(id,'spc')}}
  for(const Hh of [...document.querySelectorAll('[data-n=txtHeartStatusVal]')].map(e=>e.parentElement)){qtx(Hh,'txtHeartStatusVal',Math.round(xlHeart(o)));qtx(Hh,'txtXiulianDesc',`${XLST[st]}：${XLSD[st]}`);
   for(let i=1;i<=5;i++){const e=qn(Hh,'spStatus'+i);if(e)e.style.filter=i-1===st?'':'grayscale(1) brightness(.85)'}
-  const b=qn(Hh,'btnAddHeart');if(b){const low=xlHeart(o)<0;b.style.display=low?'':'none';const pm=[...Hh.querySelectorAll('[data-n=spPlusMark]')].find(e=>Math.abs(parseFloat(e.style.left)-321)<3);if(pm){pm.style.display=low?'':'none';Hh.appendChild(pm)}pe2(b).onclick=()=>xlDrug('h',id)}}}
+  const b=qn(Hh,'btnAddHeart');if(b){/* 使用者回報心情值無法增加：心情可吃藥往上存到 +100（自然回復仍只回到 0），加號按鈕在未滿 100 時都顯示 */const low=xlHeart(o)<100;b.style.display=low?'':'none';const pm=[...Hh.querySelectorAll('[data-n=spPlusMark]')].find(e=>Math.abs(parseFloat(e.style.left)-321)<3);if(pm){pm.style.display=low?'':'none';Hh.appendChild(pm)}pe2(b).onclick=()=>xlDrug('h',id)}}}
 // ---------- 圖片素材 ----------
 const IMG={};
 function img(src){if(!IMG[src]){const i=new Image();i.src=src;IMG[src]=i}return IMG[src]}
@@ -6171,7 +6171,7 @@ function xlBonus(id){const o=S.heroes[id],p=o&&o.xl||{},lv=o?o.lv+(o.tp||0):1,r=
  return r}
 // 原作：心情值＝悟性−已用聲望；心情分五種狀態（天人合一90%…身心俱疲50%），心情低於 −10/−20/−30/−40 依序下降。無塵丹+10、清涼丹+5 心情；紅糖水+25%、當歸牛肉湯+50% 修煉成功率；雞血提高修煉效果
 const XLST=['天人合一','生龍活虎','神清氣爽','狀態平平','身心俱疲'],XLSR=[.9,.8,.7,.6,.5],XLSD=['迫不及待想要衝進修煉場','一身的勁彷彿用都用不完似的','清風藍天，修煉場我來了','略有些疲憊，提不起精神來','心力憔悴，感覺不會再愛了'];
-function xlHeart(o){const n=Date.now();if(o.hrt==null)o.hrt=0;if(o.hrt<-50)o.hrt=-50;if(o.hrtT&&o.hrt<0)o.hrt=Math.min(0,o.hrt+(n-o.hrtT)/36e5*20);o.hrtT=n;return o.hrt}
+function xlHeart(o){const n=Date.now();if(o.hrt==null||!isFinite(o.hrt))o.hrt=0;if(o.hrt<-50)o.hrt=-50;if(o.hrtT&&o.hrt<0)o.hrt=Math.min(0,o.hrt+(n-o.hrtT)/36e5*20);o.hrtT=n;return o.hrt}
 const xlStatus=o=>{const h=xlHeart(o);return h>-10?0:h>-20?1:h>-30?2:h>-40?3:4};
 const xlRate=(o,tid)=>XLSR[xlStatus(o)]+(o.xlb||0);
 const XLFREE=36e5,xlFreeOk=()=>Date.now()>=(S.xlf||0);
@@ -6218,7 +6218,7 @@ function xlView(){const id=XLV,o=S.heroes[id],H=HM[id],X=xlSet(o),t=X.o[X.s],I=D
  if(XLRES){if(XLRES.r)h+=`<div class="xlres">${XLRES.r.map(r=>`<div class="xlr1 ${r.ok?'ok':'no'}"><img src="a/ui/xl/${r.ok?'font_xl_xiulianchenggong':'font_xl_xiulianshibai'}.png" alt="${r.ok?'修煉成功':'修煉失敗'}"><div><b class="gn${HM[r.id].r||0}">${esc(HM[r.id].n)}</b>　${r.ok?`${esc(r.d)} +${r.g}${r.big?'（大成功）':''}${r.jx?'（雞血翻倍）':''}`:'未有所得'}<br><small>${esc(r.msg)}${r.rf?'　修煉內容已自動刷新':''}</small></div></div>`).join('')}</div>`;
   else h+=`<p class="xlres1 ${XLRES.bad?'r2':''}">${esc(XLRES.txt)}</p>`}
  h+=`</div><details class="xlsum"><summary>${esc(H.n)} 修煉累積加成</summary><div class="xlsg">${XLK.filter(k=>(o.xl||{})[k]).map(k=>`<span>${XLN[k]}：${o.xl[k]} 點（+${k.startsWith('skill')||k.startsWith('absorb')?xb[k].toFixed(1)+'%':Math.round(xb[k]*10)/10}）</span>`).join('')||'<span>尚未修煉</span>'}</div>
- <p class="xlcost">修煉點數 × 原作成長值 × 等級 ＝ 屬性加成，有原作上限；命中類 ÷10 以配合本版戰鬥尺度。武學釋放每點 +0.5% 發動機率，武學效果每點 +0.5% 絕招傷害。化解四項每點 0.5%：防禦化解＝被打時化解機率、化解減免＝化解時多減傷（基本減 30%）、攻擊化解＝降低對手化解機率、化解損失＝削弱對手化解減傷。成功率由心情狀態決定（原作：天人合一 90%、生龍活虎 80%、神清氣爽 70%、狀態平平 60%、身心俱疲 50%）；每次修煉扣心情（聲望花費÷10000），心情每小時自動回復 20 點（回到 0 為止，本版自訂）。成功率超過 100% 的部分轉為大成功機率。</p></details>
+ <p class="xlcost">修煉點數 × 原作成長值 × 等級 ＝ 屬性加成，有原作上限；命中類 ÷10 以配合本版戰鬥尺度。武學釋放每點 +0.5% 發動機率，武學效果每點 +0.5% 絕招傷害。化解四項每點 0.5%：防禦化解＝被打時化解機率、化解減免＝化解時多減傷（基本減 30%）、攻擊化解＝降低對手化解機率、化解損失＝削弱對手化解減傷。成功率由心情狀態決定（原作：天人合一 90%、生龍活虎 80%、神清氣爽 70%、狀態平平 60%、身心俱疲 50%）；每次修煉扣心情（聲望花費÷10000），心情每小時自動回復 20 點（回到 0 為止，本版自訂）；可吃無塵丹、清涼丹把心情往上存到 +100。成功率超過 100% 的部分轉為大成功機率。</p></details>
  <div class="xlstrip">${ids.map(k=>`<button class="xlsh${k===id?' on':''}" data-xlh="${k}"><span class="xli">${HM[k].ic>=0?`<span class="ic" style="${icStyle60(k)}"></span>`:''}</span><small class="gn${HM[k].r||0}">${esc(HM[k].n)}</small></button>`).join('')}</div></div>`;
  return h}
 
