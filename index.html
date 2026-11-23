@@ -2539,10 +2539,10 @@ function ydAfter(){if(EVB&&EVB.kind==='yd'&&!EVB.done){scene(EVB.b,EVB.bg||'bg_s
   const wrap=qAdd(R,'',{l:0,t:0,w:960,h:640});wrap.style.pointerEvents='none';
   r.sl.forEach((s,i)=>{const c=i%8,rw=Math.floor(i/8),X=288+c*83,Y=428-rw*83,E=s.e&&s.e!=='begin'&&YD.ev[s.e];const n=document.createElement('div');n.className='qa';n.style.cssText=`left:${X}px;top:${-Y}px;width:84px;height:640px;pointer-events:none`;n.innerHTML=QY.L.yds;wrap.appendChild(n);
    for(let k=1;k<=23;k++)qhide(n,'DT'+k);
-   if(s.st===1)qshow(n,'DT1',1);if((s.st===2||s.st===3)&&!s.e)qshow(n,'DT13',1);if(i===0||(i===39&&s.st!==1))qshow(n,'DT2',1);
-   if(E&&s.st===3&&!(i===13||i===26)){const sg=E.sg;if(sg>=3&&sg<=22)qshow(n,'DT'+sg,1)}else if(E&&s.st===2&&!(i===13||i===26)&&i!==39)qshow(n,'DT13',1);
+   /* 照原版：灰石板＝未探索、咖啡色石板＝可探索；點開後石板消失，空格與已完成的事件只露出地面 */if(s.st===1)qshow(n,'DT1',1);if(s.st===2&&!s.e)qshow(n,'DT13',1);if(i===0||(i===39&&s.st!==1))qshow(n,'DT2',1);
+   if(E&&s.st===3&&!s.dn&&!(i===13||i===26)){const sg=E.sg;if(sg>=3&&sg<=22)qshow(n,'DT'+sg,1)}else if(E&&s.st===2&&!(i===13||i===26)&&i!==39)qshow(n,'DT13',1);
    if(i===13||i===26){if(s.st!==1)qshow(n,s.dn?'DT23':'DT14',1)}if(i===39&&s.st!==1)qshow(n,'DT4',1);
-   if(s.st===3&&E&&s.dn&&i!==13&&i!==26&&i!==39){n.style.opacity='.55'}
+   
    const h=document.createElement('div');h.style.cssText=`position:absolute;left:${X}px;top:${640-Y-82}px;width:84px;height:80px;cursor:${s.st===1?'default':'pointer'};pointer-events:auto`;h.onclick=()=>ydTouch(i);wrap.appendChild(h)});
   bmApply(R);layoutScl();return}
  // 入口畫面
