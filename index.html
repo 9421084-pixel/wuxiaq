@@ -516,7 +516,13 @@ const XVGIFT=['ID1471','ID1340','ID999','ID779','ID595','ID564','ID250','ID247']
 function grantTest(){if(!S.sect||S.gm50)return;S.gm50=1;S.gold=999999;for(const id in S.heroes){const o=S.heroes[id];if(o.lv<50){o.lv=50;o.exp=0}}save()}
 /* 讀檔時把武學數量修正成數字（舊存檔有被存成文字 "01" 的情形，再拿到同一本會變成 "011"） */function load(){const o=load0();try{for(const k in o.wx||{}){const w=o.wx[k];if(w){w.n=parseInt(w.n,10)||0;w.lv=parseInt(w.lv,10)||1}}}catch(e){}return trackGold(o)}
 function load0(){try{const j=localStorage.getItem(KEY);if(j)return JSON.parse(j)}catch(e){}return{v:3,vipm:1,sect:'',silver:1000,gold:99999,heroes:{},souls:{},team:[],eq:[],items:{},wx:{},pc:{},uid:1,prog:[0,0,0],cur:{d:0,i:0},seen:{},fresh:1,g100k:1,sw0:1,gm50:1,r1:1,t053:1,tzs:1,tzs2:1,gxs1:1,sar053:1,t352:1,g352b:1,migEX:1,g845:1,mig835:1,mig361:1,gxv1:1,zwsk1:1,zwdup1:1}}
-function save(){if(INSP)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){if(INSP)return;let txt;try{txt=JSON.stringify(S,(k,v)=>k==='xvF'?undefined:v)}catch(e){txt=null}
+ if(txt==null||txt.length>4e6){saveTrim();try{txt=JSON.stringify(S,(k,v)=>k==='xvF'?undefined:v)}catch(e){return}}
+ try{localStorage.setItem(KEY,txt)}catch(e){saveTrim();try{localStorage.setItem(KEY,JSON.stringify(S,(k,v)=>k==='xvF'?undefined:v))}catch(e2){if(!window.__svw){window.__svw=1;setTimeout(()=>toast('存檔空間不足，進度可能無法保存！請到設置匯出存檔備份'),500)}}}}
+// 存檔過大時：拿掉恩怨紀錄裡的戰鬥重播資料（只影響舊紀錄的「回放」）
+function saveTrim(){try{const e=S.ey;if(!e)return;for(const k of['rob','ar'])(e[k]||[]).forEach(x=>{delete x.rp;if(x.snap&&x.snap.bot&&x.snap.bot.F)delete x.snap.bot.F})}catch(er){}}
+/* 自動存檔：切到背景、關閉頁面、每 10 秒各存一次，避免當機或重新整理時進度消失 */
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S&&S.sect)save()});window.addEventListener('pagehide',()=>{if(S&&S.sect)save()});setInterval(()=>{if(S&&S.sect&&!busy)save()},10000);
 // 原作聚賢莊三個檔次：等級範圍取自 market 資料表，俠客權重取自各人物的 pickChance
 const TIERS=[{n:'十里挑一',lo:0,hi:2,cost:10,cur:'gold'},{n:'百里挑一',lo:1,hi:3,cost:100,cur:'gold'},{n:'萬里挑一',lo:2,hi:3,cost:300,cur:'gold'}],FIRSTG=[null,2,3];
 const JHP=[1,10,30];
@@ -2066,7 +2072,7 @@ function rdTeam(){const R=rdS().run,{b}=rdBenefit(R),J=jhlBonus(),U=[];
   for(const k2 of['hp','atk','dp','spd','mp'])u[k2]=Math.round((u[k2]||0)*(1+b));u.sl=k;U.push(u)});return U}
 function rdFoes(id){const L=rdL(id),EN=RDT().en;return L[4].map((e,k)=>{if(!e)return null;const[h,n,lv,hp,ap,dp,dx,mp,sid,g,s2,su]=EN[e];return{name:n,h,lvl:lv,hp,atk:ap,dp,spd:dx,mp,side:1,row:[1,0,2,1,2,1,2][k],sl:k,sid,hr:s2[0],dr:s2[1],chr:s2[2],crr:s2[3],cm:s2[4],aw:0,big:e===L[6],su:{...(su||{})}}}).filter(Boolean)}
 function rdGive(t,n,out){n=Math.max(1,Math.round(n));if(t==='IM001'){S.silver+=n;out.push(['銀兩',n,'IM001'])}else if(t==='IM002'){S.gold=(S.gold||0)+n;out.push(['元寶',n,'IM002'])}else if(t==='IM004'){S.sw=(S.sw||0)+n;out.push(['聲望',n,'IM004'])}else if(t==='IM007'){S.nxq=(S.nxq||0)+n;out.push(['內息',n,'IM007'])}else if(t==='IM008'){S.xqi=(S.xqi||0)+n;out.push(['玄氣',n,'IM008'])}else if(IM.it[t]){addItem(t,n);out.push([IM.it[t][0],n,t])}else if(IM.eq[t]){for(let k=0;k<n;k++)addEq(t);out.push([IM.eq[t][0],n,t])}}
-function rdStart(){const r=rdS();if(cf().lv<RDT().p.levelLimit){toast('32級開啟此功能！');return}if(r.run){RDV=r.run.step==='fight'?'fight':'sel';render();return}
+function rdStart(){const r=rdS();if(cf().lv<RDT().p.levelLimit){toast('32級開啟此功能！');return}if(r.run){/* 中斷過的闖關：在戰鬥階段就直接接著打下一關（之前只切畫面，結果又回到入口，看起來像按了沒反應） */if(r.run.step==='fight'){if(busy&&!(EVB&&!EVB.done))busy=false;rdNext();return}RDV='sel';render();return}
  if(!rdOpen()){toast('每日開啟時間:09:00-23:00');return}if(r.n>=3){toast('今日闖關次數已用完');return}if(r.up!==rdDay()){toast('首次闖關時，需先進行助戰！');RDV='assist';render();return}
  const team=S.team.filter(id=>S.heroes[id]);if(team.length<4){toast('需要至少 4 名出戰弟子');return}
  r.run={d:0,i:0,mine:[],as:[],sl:[null,null,null,null,null,null,null],step:'sel1',mult:1,rec:[[],[],[]],dope:RDB&&RDB.dope?1:0,cand:null};RDV='sel';save();render()}
@@ -2453,7 +2459,7 @@ function ydResult(rid,i,msgs){const R=YD.rs[rid],r=ydRun();if(!R||!r)return;cons
  if(R.ce&&i!=null&&YD.ev[R.ce]){r.sl[r.L*0+i].e=R.ce;r.sl[i].dn=0}
  if(R.cl)ydLayer(r.L+R.cl);
  msgs.push(R.d);return out}
-function ydLayer(L){const r=ydRun();const C=YD.lay[ydLayKey(L)];if(!C){r.end=1;return}r.L=L;r.sl=ydGen(L,r.ym)}
+function ydLayer(L){const r=ydRun();const C=YD.lay[ydLayKey(L)];if(!C){r.end=1;return}/* 走過的樓層保留原樣，可以回上一層再下來 */r.lays=r.lays||{};if(r.sl)r.lays[r.L]=r.sl;r.L=L;r.sl=r.lays[L]||ydGen(L,r.ym)}
 // 原作 zhenlong 隊伍：七個位置；本次潛入的戰鬥屬性（mainAttr）加減成用在我方五圍，護法長老另有減益
 function ydFoes(zl,boss){const T=YD.tm[zl]||[],k=1+(boss?ydRun().boss:0);return T.map((e,q)=>{if(!e)return null;const[h,n,lv,hp,ap,dp,dx,mp,sid,g,s2,su]=e;return{name:n,h,lvl:lv,hp:Math.round(hp*k),atk:Math.round(ap*k),dp:Math.round(dp*k),spd:Math.round(dx*k),mp,side:1,row:[1,0,2,1,2,1,2][q],sl:q,sid:D.sk&&D.sk[sid]?sid:null,hr:s2[0],dr:s2[1],chr:s2[2],crr:s2[3],cm:s2[4],aw:0,su:{...(su||{})}}}).filter(Boolean)}
 function ydMine(){const k=1+ydRun().my;return myTeam().map(u=>{for(const a of['hp','atk','dp','spd','mp'])if(u[a]!=null)u[a]=Math.round(u[a]*k);if(u.maxhp!=null)u.maxhp=u.hp;return u})}
@@ -2476,7 +2482,8 @@ function ydBox(i){const r=ydRun(),s=r.sl[i],E=YD.ev[s.e],out=[],msgs=[];s.dn=1;s
 function ydBook(i){const r=ydRun(),s=r.sl[i],E=YD.ev[s.e],out=[];s.dn=1;s.st=3;ydBonus(E,out);save();render();ydMsg('書架收穫總覽',[],out)}
 const ydAround=i=>ydNb(i).every(j=>{const s=ydRun().sl[j];return!s.e||s.e==='begin'||s.dn||(s.st===3&&!s.e)});
 function ydTouch(i){const r=ydRun();if(!r)return;if(r.end){toast('後續關卡暫被封鎖，敬請期待');return}const s=r.sl[i];
- if(s.st===1){/* 本版：灰色未探索的格子點了給提示，避免誤以為壞掉 */const blk=ydNb(i).some(j=>{const t=r.sl[j],E2=t.e&&YD.ev[t.e];return t.st===3&&E2&&E2.blk&&!t.dn});toast(blk?'被旁邊的阻擋戰鬥擋住了，先打贏那場戰鬥才能往這裡探索':'這一格還沒探索到，請先打開相鄰（上下左右）的咖啡色格子');return}if(i===0){if(r.L===0)toast('少俠，你已經處在第一層');return}
+ if(s.st===1){/* 本版：灰色未探索的格子點了給提示，避免誤以為壞掉 */const blk=ydNb(i).some(j=>{const t=r.sl[j],E2=t.e&&YD.ev[t.e];return t.st===3&&E2&&E2.blk&&!t.dn});toast(blk?'被旁邊的阻擋戰鬥擋住了，先打贏那場戰鬥才能往這裡探索':'這一格還沒探索到，請先打開相鄰（上下左右）的咖啡色格子');return}if(i===0){if(r.L===0){toast('少俠，你已經處在第一層');return}askYes(`要回到第${['一','二','三','四','五'][r.L-1]}層嗎？（不消耗步數，這一層的進度會保留）`,'返回上一層').then(y=>{if(!y)return;ydLayer(r.L-1);save();render()});return}
+ if(i===39&&s.dn&&!r.end){/* 已擊敗過護法的樓層：直接下到下一層 */ydLayer(r.L+1);save();render();return}
  const E=s.e&&YD.ev[s.e];
  if(i===13||i===26){if(s.dn){ydMsg('書架','已領取過書架獎勵',[]);return}if(!ydAround(i)){toast('完成書架周圍的事件才能領取獎勵');return}ydBook(i);return}
  if(i===39){if(!ydAround(i)){toast('需要完成周圍全部事件');return}ydEvent(i);return}
@@ -4528,7 +4535,7 @@ function eyS(){const e=S.ey||(S.ey={rob:[],ar:[],mail:[],fr:[],rv:[],yb:[],n:{ro
 function eyCnt(){if(!S||!S.ey)return 0;const n=S.ey.n;return(n.rob||0)+(n.ar||0)+(n.sys||0)+(n.per||0)+(n.fq||0)+(n.yb||0)}
 function eyRand(seed){let x=seed>>>0||1;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
 function eySim(A,E,seed){const c=o=>JSON.parse(JSON.stringify(o)),r0=Math.random;Math.random=eyRand(seed);try{return sim(null,c(E),c(A))}finally{Math.random=r0}}
-const eyClone=L=>JSON.parse(JSON.stringify(L));
+/* 戰鬥重播只存必要資料：電腦掌門的 xvF（整份存檔副本）不存，否則每筆紀錄都夾帶整個存檔、越存越大，最後存檔失敗、重新整理後進度消失 */const eyClone=L=>JSON.parse(JSON.stringify(L,(k,v)=>k==='xvF'?undefined:v));
 function eyNpc(lv){const T=QY.T.lj,avg=Math.max(1,lv),cnt=Math.min(7,CLV[Math.min(CLV.length,Math.max(1,lv))-1][6]),hs=[],used=new Set();
  for(let k=0;k<cnt;k++){const q=Math.random(),g=q<.15?0:q<.65?1:q<.95?2:3,pool=POOL[g]&&POOL[g].length?POOL[g]:POOL[1];let h=pool[Math.floor(Math.random()*pool.length)];for(let z=0;z<6&&used.has(h.id);z++)h=pool[Math.floor(Math.random()*pool.length)];used.add(h.id);hs.push(h.id)}
  return{id:'npc'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36),name:aiName(Math.random),lv,vip:Math.floor(Math.random()*8),hs,hl:Math.max(1,Math.round(avg*(.72+Math.random()*.22)))}}
