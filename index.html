@@ -2749,7 +2749,7 @@ function zlPass(x){let ori=null;const sl=IM.eq[x.t][1];
 // ---------- 裝備進階分頁（原作 EquipTpView／EquipPassTpView，版面 a_zhuangbei_jinjie_ui、a_jinjie_chuancheng_ui）----------
 // 原作規則：門派 34 級開放；每階提高主屬性每級成長（upLimit），最高 20 階；成功率照 tpConfig；材料照 equipsup，失敗消耗材料、不降級；不花銀兩。
 // 進階傳承：消耗玉中石×1，把另一件裝備（進階等級較高、同品級）的進階等級傳給這件，對方歸零；必定成功。
-// 本版說明：本版裝備沒有副屬性，所以副屬性的進階放大不顯示。
+// 進階預覽第 3、4 行顯示副屬性放大（原作版面有這兩行）。
 const tpNm=(x,n)=>`${IM.eq[x.t][0]}${n?' +'+n:''}`;
 function tpAfter(R,x){const B=qn(R,'tpBox');if(!B)return;const E=IM.eq[x.t],n=(x.tp||0),c=IM.tp&&IM.tp[x.t],G=GCOL[E[2]];
  const fr=[...B.querySelectorAll('[data-im="fix_a_bg_buzhen_00"]')].filter(e=>!e.closest('[data-n^="ccbItem"]'));qhide(B,'spBoringBg');
@@ -2765,6 +2765,9 @@ function tpAfter(R,x){const B=qn(R,'tpBox');if(!B)return;const E=IM.eq[x.t],n=(x
  const g0=(x.g!=null?x.g:E[5])+tpSum(x),up=c[n][0],v0=eqVal(x),v1=Math.round(((x.b!=null?x.b:E[4])+(g0-tpSum(x)+up)*(x.lv-1))*EQK),mx=(IM.eqr&&IM.eqr[x.t]?IM.eqr[x.t][3]:E[5])+tpSum(x);
  qtx(B,'txtFromAttr1Label',ATTR[E[3]]);qtx(B,'txtToAttr1Label',ATTR[E[3]]);qtx(B,'txtFromAttr1','+'+v0);qtx(B,'txtToAttr1','+'+v1);
  qtx(B,'txtFromAttr2Label','成長上限');qtx(B,'txtToAttr2Label','成長上限');qtx(B,'txtFromAttr2','+'+Math.round(mx*EQK*100)/100);qtx(B,'txtToAttr2','+'+Math.round((mx-tpSum(x)+up)*EQK*100)/100);
+ /* 原作進階預覽第 3、4 行：副屬性（tpConfig addValue1／2 放大） */{const b0=eqBn(x),b1=eqBn(Object.assign({},x,{tp:n+1})),an=a=>ANAME[a]||(RDX[a]&&RDX[a][0])||a,fv=(a,v)=>'+'+(EQP.includes(a)?Math.round(v*1000)/10+'%':Math.round(v));
+  for(let i=0;i<2;i++){const r=3+i;if(!b0[i])continue;qshow(B,'txtFromAttr'+r+'Label',1);qshow(B,'txtToAttr'+r+'Label',1);qshow(B,'txtFromAttr'+r,1);qshow(B,'txtToAttr'+r,1);
+   qtx(B,'txtFromAttr'+r+'Label',an(b0[i][0]));qtx(B,'txtToAttr'+r+'Label',an(b1[i][0]));qtx(B,'txtFromAttr'+r,fv(b0[i][0],b0[i][1]));qtx(B,'txtToAttr'+r,fv(b1[i][0],b1[i][1]))}}
  pe2(qn(B,'btnOK')).onclick=async()=>{if(have<k){toast('所需道具不足');return}if(!(await askYes(`消耗${IM.it[m][0]}×${k}進行進階？\n成功率${Math.floor(c[n][1]*100)}%，失敗會消耗材料`)))return;const t0=x.tp||0;doTp(x.u);BMSG='';tpRes(x,(x.tp||0)>t0)}}
 function tpRes(x,ok){qyPop('tp_jinjietishi_pop',(R,close)=>{pe2(qn(R,'btnOK')).onclick=close;qtx(R,'txtTitle',ok?'進階成功':'進階失敗');qhide(R,'txtContent');const n=x.tp||0;qtx(R,'txtName1',tpNm(x,ok?n-1:n));qtx(R,'txtName2',tpNm(x,n));
  R.querySelectorAll('[data-n="spBg1"],[data-n="spBg2"]').forEach(e=>{if(!ok)e.style.filter='grayscale(1)'})})}
