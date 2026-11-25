@@ -1275,7 +1275,7 @@ const smZone=z=>`（${z}區）`;
 // 本版自訂（使用者要求巔峰爭霸、武林大會、天下第一比照論劍）：被你打敗的電腦掌門（以名字認人）會記仇，
 //  約 4 小時內苦練變強（每次 +12% 戰力，最多 5 次＝+60%），之後較常回頭找你；打贏你就消氣，3 天沒再被你打敗也會消氣。
 function grdGet(n){const G=S.grd;if(!G||!n)return 0;const g=G[n];if(!g)return 0;const age=(Date.now()-g.t)/36e5;if(age>72){delete G[n];return 0}return Math.min(5,g.n)*Math.min(1,age/4)}
-function grdRipe(n){const g=S.grd&&S.grd[n];return!!g&&(Date.now()-g.t)/36e5>=4&&grdGet(n)>0}
+const grdK=n=>[...String(n)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);function grdRipe(n){const g=S.grd&&S.grd[n];if(!g||grdGet(n)<=0)return false;const k=grdK(n);return!aiForgive(k,g.t)&&Date.now()-g.t>=aiDelay(k,g.t)&&Math.random()<aiOn(k)*1.6}
 function grdAdd(n){if(!n)return;S.grd=S.grd||{};const g=S.grd[n]||(S.grd[n]={n:0,t:0});g.n=Math.min(5,g.n+1);g.t=Date.now()}
 function grdDel(n){if(S.grd&&n)delete S.grd[n]}
 function smFoe(o){const p=o.p,sd=20000+o.i,gk=grdGet(o.name),bo=1+.12*gk;let b;
@@ -1707,18 +1707,23 @@ const LTR=[[/排行|排名|名次|第一/, ['論劍排名要看身價和陣容�
 const LTRG=['哈哈','真的假的','同感','+1','羨慕','{me}好強','我也是','加油','好喔','笑死','有道理','學到了'];
 function ltReply(txt,c){const hit=LTR.find(([re])=>re.test(txt));const pool=hit?[...hit[1],...hit[1],...LTRG]:LTRG;return ltFill(ltPick(pool),c)}
 function ltPost(n,v,m,me){const z=ltS();z.m.push({n,v,m,t:Date.now(),me:me?1:0});if(z.m.length>100)z.m=z.m.slice(-100);z.t=Date.now();if(!me&&(!document.hidden))ltSoftRender()}
-function ltBot(txt){const c=ltCtx(),P=LTPL(),p=ltPick(P);ltPost(p.n,p.v,txt||ltGen(c),0)}
+/* 本版自訂（更像真人）：只有在線的人發言；口語化（語尾、口頭禪、偶爾不加標點）；有人發言後，常有其他在線的人 @ 他接話 */
+const ltOnline=()=>{const P=LTPL(),t=Date.now();return P.filter((p,i)=>Math.random()<aiOn(900000+i,t)*1.4)};
+const ltWho=()=>{const L=ltOnline();return L.length?ltPick(L):null};
+function ltHuman(m){if(Math.random()<.12)m=ltPick(['欸 ','話說 ','對了 ','老實說 ','噗 '])+m;if(/[。！!]$/.test(m)&&Math.random()<.35)m=m.slice(0,-1);if(Math.random()<.2)m+=ltPick(['～','XD','哈哈','…','!!','w','啦','欸','QQ']);return m}
+function ltChain(p,m,c,d){if(d>1)return;const L=ltOnline().filter(x=>x.n!==p.n);if(!L.length||Math.random()>(d?.25:.4))return;const q=ltPick(L);setTimeout(()=>{try{if(document.hidden)return;const r=ltHuman((Math.random()<.5?'@'+p.n+' ':'')+ltReply(m,c));ltPost(q.n,q.v,r,0);ltChain(q,r,c,d+1)}catch(e){}},5e3+Math.random()*2.2e4)}
+function ltBot(txt){const c=ltCtx(),p=ltWho()||ltPick(LTPL()),m=txt||ltHuman(ltGen(c));ltPost(p.n,p.v,m,0);if(!txt)ltChain(p,m,c,0)}
 function ltSoftRender(){const z=ltS(),last=z.m[z.m.length-1];const bar=document.querySelector('.hnote');if(bar&&last)bar.innerHTML=`<b>${esc(last.n)}:</b> ${esc(last.m)}`;const box=document.getElementById('ltlist');if(box)ltFillList(box)}
 // 定時：載入時補 8～14 則過去一小時的對話；之後每 45～150 秒一則（分頁隱藏時不產生）
 function ltInit(){const z=ltS();if(!z.m.length){const c=ltCtx(),P=LTPL(),n=8+Math.floor(Math.random()*7),now=Date.now();for(let i=0;i<n;i++){const p=ltPick(P);z.m.push({n:p.n,v:p.v,m:ltGen(c),t:now-(n-i)*Math.floor(2e5+Math.random()*2e5),me:0})}}
- const tick=()=>{try{if(S&&S.sect&&!document.hidden&&!busy&&Date.now()-ltS().t>45e3&&Math.random()<.35)ltBot()}catch(e){}setTimeout(tick,15e3+Math.random()*15e3)};setTimeout(tick,20e3)}
+ const tick=()=>{try{if(S&&S.sect&&!document.hidden&&!busy&&Date.now()-ltS().t>45e3&&Math.random()<Math.min(.8,.35*aiBusy()))ltBot()}catch(e){}setTimeout(tick,15e3+Math.random()*15e3)};setTimeout(tick,20e3)}
 function ltHomeBar(){const z=ltS(),last=z.m[z.m.length-1];return`<button class="hlaba" data-home="lt" aria-label="聊天"><img src="a/ui/main/btn_laba_up.png" alt=""><span class="hbl">聊天</span></button><div class="hnote">${last?`<b>${esc(last.n)}:</b> ${esc(last.m)}`:''}</div>`}
 function ltFillList(box){const z=ltS(),ng=qyNode('lt_node'),W=box.clientWidth||940;box.innerHTML='';z.m.forEach((x,i)=>{const d=qyNodeAt('lt_node',box,0,i*(ng.h+2));qtx(d,'txtName',x.n);qtx(d,'txtMessage',x.m);{const e=qn(d,'txtName');if(e){e.classList.add('nobm');e.style.color=x.me?'rgb(80,220,110)':'rgb(120,180,255)'}const m=qn(d,'txtMessage');if(m){m.classList.add('nobm');m.style.color='#f4ece0';m.style.fontSize='18px';m.style.whiteSpace='normal';m.style.lineHeight='1.3'}}const v=qn(d,'spVipLevel');if(v){const vl=x.me?vipLv():x.v;if(vl>0&&QY.A['art_font_vip'+vl])qIm(v,'art_font_vip'+vl);else v.style.display='none'}});box.scrollTop=box.scrollHeight}
 function ltOpen(){if(busy)return;qyLoad().then(()=>qyPop('lt_ui',(R,close)=>{{const bg=document.createElement('div');bg.className='qa';bg.style.cssText='left:0;top:0;width:960px;height:640px;background:rgba(4,16,22,.94)';R.insertBefore(bg,R.firstChild)}pe2(qn(R,'btnClose')).onclick=close;qtx(R,'txtNumber',S.items.ID010||0);
  const sv=qn(R,'svMsgs');if(sv){const b=qBox(sv);b.w=Math.min(b.w,870);const box=qAdd(sv.parentElement,'',b);box.id='ltlist';box.style.pointerEvents='auto';box.style.overflowY='auto';box.style.overflowX='hidden';box.classList.add('nosb');ltFillList(box);dragPanY&&dragPanY(box)}
  const inp=qAdd(R,`<input id="ltin" maxlength="40" placeholder="輸入想說的話（每次發言消耗小喇叭×1）" style="width:100%;height:100%;box-sizing:border-box;border:2px solid #8a5a20;border-radius:6px;background:#fffaf0;color:#3a2410;font:18px 'Noto Sans TC',sans-serif;padding:0 10px;outline:none;pointer-events:auto">`,{l:31,t:566,w:650,h:60});/* 和原版輸入框底圖同位置同大小，蓋住後面那條白邊 */inp.style.pointerEvents='auto';inp.style.zIndex=20;
  const send=()=>{const el=document.getElementById('ltin'),t=(el&&el.value||'').trim();if(!t)return;if(!(S.items.ID010>0)){toast('小喇叭不足，VIP2 可在市集購買');return}S.items.ID010--;if(S.items.ID010<=0)delete S.items.ID010;ltPost(S.sect,vipLv(),t,1);el.value='';qtx(R,'txtNumber',S.items.ID010||0);save();ltSoftRender();
-  const c=ltCtx(),P=LTPL(),k=1+Math.floor(Math.random()*3),used=new Set();for(let i=0;i<k;i++){let p;do{p=ltPick(P)}while(used.has(p.n)&&used.size<P.length);used.add(p.n);setTimeout(()=>ltPost(p.n,p.v,ltReply(t,c),0),2500+i*3500+Math.random()*3000)}};
+  const c=ltCtx(),P=ltOnline(),bz=aiBusy(),k=Math.min(P.length,Math.random()<.12/bz?0:1+Math.floor(Math.random()*Math.min(3,1+bz*1.5))),used=new Set();/* 深夜在線的人少，可能沒人回；回話要打字時間 */let at=0;for(let i=0;i<k;i++){let p;do{p=ltPick(P)}while(used.has(p.n)&&used.size<P.length);used.add(p.n);const r=ltHuman((Math.random()<.4?'@'+S.sect+' ':'')+ltReply(t,c));at+=3e3+r.length*350+Math.random()*9e3;setTimeout(()=>ltPost(p.n,p.v,r,0),at)}};
  pe2(qn(R,'btnChat')).onclick=send;{const el=document.getElementById('ltin');if(el)el.onkeydown=e=>{if(e.key==='Enter')send()}}bmApply(R)}))}
 // 比賽陣容（原作：報名時的陣容為預設參賽陣容；大會期間每日 12:00～15:00 可上傳新陣容；上傳身價較高時，賽事中累積的身價提升歸零）
 function wdSnap(){tposFix();return{team:S.team.slice(),tpos:{...(S.tpos||{})},cfm:S.cfm||null,w:teamWorth(),t:Date.now()}}
@@ -4558,25 +4563,25 @@ const eyUnits=(o,side)=>o.bot?ljUnits(o.bot).map(u=>(u.side=side,u)):o.hs.map((i
 const eyMine=()=>myTeam().map(u=>(u.side=1,u));
 function eyPiece(p){if(IM.epc&&IM.epc[p]){const t=IM.epc[p][0];return[IM.eq[t][0]+'殘片',IM.eq[t][2]]}if(IM.pc&&IM.pc[p]){const t=IM.pc[p][0];return[IM.wx[t][0]+'殘片',IM.wx[t][1]||1]}if(IM.fpc&&IM.fpc[p]){const t=IM.fpc[p][0];return[IM.fm[t][0]+'殘片',1]}if(HM[p])return[HM[p].n+'魂魄',HM[p].r||1];return[p,1]}
 function eyTick(){if(!QY||!S||!S.sect||!S.team.length)return;const e=eyS(),now=Date.now(),hrs=Math.min(24,Math.floor((now-e.t)/36e5));if(hrs<1)return;e.t+=hrs*36e5;
- for(let h=0;h<hrs;h++){
+ for(let h=0;h<hrs;h++){const th=now-(hrs-h-1)*36e5-Math.floor(Math.random()*36e5),bz=aiBusy(th);/* 照時段熱鬧程度：深夜少、晚上多 */
   // 被掠奪
-  if(cf().lv>=10&&e.rc<12&&Math.random()<.5){const own=Object.keys(S.pc||{}).filter(p=>S.pc[p]>0&&((IM.epc&&IM.epc[p])||(IM.pc&&IM.pc[p])||(IM.fpc&&IM.fpc[p])));
+  if(cf().lv>=10&&e.rc<12&&Math.random()<Math.min(.95,.5*bz)){const own=Object.keys(S.pc||{}).filter(p=>S.pc[p]>0&&((IM.epc&&IM.epc[p])||(IM.pc&&IM.pc[p])||(IM.fpc&&IM.fpc[p])));
    /* 本版自訂：掠奪者較聰明，優先挑高品級的殘片（權重＝品級²），並派等級略高的人來 */
    const pickW=()=>{const w=own.map(p=>{const g=eyPiece(p)[1]||1;return g*g});let q=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<own.length;i++){if((q-=w[i])<0)return own[i]}return own[0]};
    if(own.length){const want=pickW(),o=eyNpc(Math.max(1,cf().lv+Math.floor(Math.random()*5)-1)),A=eyUnits(o,0),E=eyMine(),seed=Math.floor(Math.random()*2**31),b=eySim(A,E,seed);
     let robbed=false;if(b.win&&Math.random()<RBCH[Math.min(3,eyPiece(want)[1])]){robbed=true;S.pc[want]--}
-    e.rob.unshift({id:o.id,type:'rob',info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},time:now-(hrs-h-1)*36e5-Math.floor(Math.random()*36e5),lost:b.win,want,robbed,snap:o,rp:{A:eyClone(A),E:eyClone(E),seed}});e.rob=e.rob.slice(0,30);e.n.rob++;e.rc++}}
+    e.rob.unshift({id:o.id,type:'rob',info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},time:th,lost:b.win,want,robbed,snap:o,rp:{A:eyClone(A),E:eyClone(E),seed}});e.rob=e.rob.slice(0,30);e.n.rob++;e.rc++}}
   // 被論劍挑戰
-  if(qyLv()>=15&&e.ac<10&&Math.random()<.55){const l=ljS();if(l.rank<LJN){const pp=ljPP();let rr=0,best=0;
+  if(qyLv()>=15&&e.ac<10&&Math.random()<Math.min(.95,.55*bz)){const l=ljS();if(l.rank<LJN){const pp=ljPP();let rr=0,best=0;
     /* 本版自訂（使用者要求更積極、更聰明）：記仇且已苦練完成的對手優先回頭挑戰；否則從排名在你後面 30 名內挑「戰力最接近或超過你」的人出手 */
-    const A=ljAI(),gl=Object.keys(A.gr||{}).map(Number).filter(pid=>ljGrudge(pid)>=Math.min(LJGM,(A.gr[pid]||{}).n||0)*.999).map(pid=>{for(let c=l.rank+1;c<=Math.min(LJN,l.rank+300);c++)if(ljPid(c)===pid)return c;return 0}).filter(Boolean);
+    const A=ljAI(),gl=Object.keys(A.gr||{}).map(Number).filter(pid=>ljGrudge(pid)>=Math.min(LJGM,(A.gr[pid]||{}).n||0)*.999).filter(pid=>ljGrudgeRipe(pid)&&Math.random()<aiOn(pid,th)*1.6).map(pid=>{for(let c=l.rank+1;c<=Math.min(LJN,l.rank+300);c++)if(ljPid(c)===pid)return c;return 0}).filter(Boolean);
     if(gl.length&&Math.random()<.8){rr=gl[Math.floor(Math.random()*gl.length)];best=ljBotPow(rr)/Math.max(1,pp)}
-    else{for(let k=1;k<=30;k++){const c=l.rank+k;if(c>LJN)break;const q=ljBotPow(c)/Math.max(1,pp);if(q>best){best=q;rr=c}}if(best<.8&&Math.random()<.4)rr=0}
+    else{for(let k=1;k<=30;k++){const c=l.rank+k;if(c>LJN)break;if(Math.random()>aiOn(ljPid(c),th)*1.5)continue;const q=ljBotPow(c)/Math.max(1,pp);if(q>best){best=q;rr=c}}if(best<.8&&Math.random()<.4)rr=0}
     if(!rr)rr=Math.min(LJN,l.rank+1+Math.floor(Math.random()*10));const bot=ljBot(rr);if(bot&&bot.hs.length){const o={id:'lj'+rr+'_'+now.toString(36)+h,name:bot.name,lv:bot.lv,vip:Math.floor(Math.random()*8),bot},A=eyUnits(o,0),E=eyMine(),seed=Math.floor(Math.random()*2**31),b=eySim(A,E,seed);
-    const old=l.rank;ljStat(bot.pid,b.win);if(b.win){ljSwap(old,rr);l.rank=rr;const rvg=!!bot.gk&&ljGrudgeRipe(bot.pid);l.log.unshift(`「${bot.name}」${rvg?'苦練歸來前來復仇':'前來論劍挑戰'}，本門落敗，排名降至第${rr}名`);l.log=l.log.slice(0,10);if(ljAI().gr)delete ljAI().gr[bot.pid];o.rvg=rvg}else ljGrudgeAdd(bot.pid,now-(hrs-h-1)*36e5);
-    e.ar.unshift({id:o.id,type:'arena',info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},time:now-(hrs-h-1)*36e5-Math.floor(Math.random()*36e5),lost:b.win,rvg:!!o.rvg,rank:[old,b.win?rr:old],snap:{name:o.name,lv:o.lv,vip:o.vip,bot},rp:{A:eyClone(A),E:eyClone(E),seed}});e.ar=e.ar.slice(0,30);e.n.ar++;e.ac++}}}
+    const old=l.rank;ljStat(bot.pid,b.win);if(b.win){ljSwap(old,rr);l.rank=rr;const rvg=!!bot.gk&&ljGrudgeRipe(bot.pid);l.log.unshift(`「${bot.name}」${rvg?'苦練歸來前來復仇':'前來論劍挑戰'}，本門落敗，排名降至第${rr}名`);l.log=l.log.slice(0,10);if(ljAI().gr)delete ljAI().gr[bot.pid];o.rvg=rvg}else ljGrudgeAdd(bot.pid,th);
+    e.ar.unshift({id:o.id,type:'arena',info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},time:th,lost:b.win,rvg:!!o.rvg,rank:[old,b.win?rr:old],snap:{name:o.name,lv:o.lv,vip:o.vip,bot},rp:{A:eyClone(A),E:eyClone(E),seed}});e.ar=e.ar.slice(0,30);e.n.ar++;e.ac++}}}
   // 好友請求
-  if(cf().lv>=10&&e.fr.length<EYMAX()&&Math.random()<.08&&e.mail.filter(m=>m.type==='social').length<5){const o=eyNpc(Math.max(1,cf().lv+Math.floor(Math.random()*3)-1));e.mail.unshift({type:'social',time:now-Math.floor(Math.random()*36e5),info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},snap:o});e.n.fq=(e.n.fq||0)+1}
+  if(cf().lv>=10&&e.fr.length<EYMAX()&&Math.random()<.08*bz&&e.mail.filter(m=>m.type==='social').length<5){const o=eyNpc(Math.max(1,cf().lv+Math.floor(Math.random()*3)-1));e.mail.unshift({type:'social',time:now-Math.floor(Math.random()*36e5),info:{id:o.id,name:o.name,lv:o.lv,vip:o.vip},snap:o});e.n.fq=(e.n.fq||0)+1}
  }
  e.mail=e.mail.slice(0,40);
  // 已送出的結交邀請：1～5 分鐘後對方接受
@@ -5029,6 +5034,14 @@ function ljBot0(r){if(r<=LJE)return ljElite(r);const T=QY.T.lj,R=ljRng(r*7919+13
 // ・電腦掌門隨時間「練功」：等級、招募更好的弟子、裝備等級與強化、武學、修煉、經脈、陣法都會依遊戲內的系統一起提升（成長速度每人不同）。
 // ・離線期間每小時約 4 場電腦掌門之間的挑戰（勝率依雙方陣容戰力），名次會跟著變動。
 // ・前 30 名改為模擬課金玩家（見 ljElite 上方說明）。
+// 本版自訂（使用者要求電腦掌門更像真人）：每位電腦掌門有自己的作息類型——上班族（早上、午休、晚上）、學生（放學後到深夜）、夜貓（深夜最活躍）、閒人（整天）、佛系（偶爾上線）；
+//  週末比較多人在線；每人每天約 1 成機率整天沒上線（佛系約 3～4 成）。論劍互打、來挑戰／掠奪你、記仇回頭找你、聊天室發言都只有「在線」的人會做。
+const AIHC=[[.15,.05,.02,.01,.01,.02,.1,.35,.4,.15,.1,.15,.55,.45,.1,.1,.15,.25,.45,.7,.85,.9,.8,.45],[.2,.08,.03,.01,.01,.01,.05,.2,.1,.05,.05,.1,.3,.25,.1,.15,.45,.6,.6,.7,.8,.85,.75,.5],[.8,.75,.6,.4,.2,.05,.02,.02,.03,.05,.05,.1,.15,.2,.2,.25,.3,.35,.4,.5,.6,.7,.8,.85],[.1,.05,.02,.01,.01,.02,.1,.3,.5,.6,.6,.55,.5,.5,.55,.6,.6,.55,.5,.6,.7,.7,.5,.25],[.04,.02,.01,0,0,.01,.03,.1,.17,.2,.2,.2,.18,.18,.2,.2,.2,.2,.18,.2,.25,.25,.18,.09]];
+const aiType=k=>Math.floor(ljRng((k*48271+11)>>>0)()*5),aiDay=t=>{const d=new Date(t);return Math.floor((t-d.getTimezoneOffset()*6e4)/864e5)};
+function aiOn(k,t){t=t||Date.now();const d=new Date(t),h=d.getHours(),w=d.getDay(),ty=aiType(k);let p=AIHC[ty][h];if((w===0||w===6)&&ty!==2)p=Math.min(1,p*1.25+.06);if(ljRng((k*92821+aiDay(t)*7919)>>>0)()<(ty===4?.35:.1))p*=.08;return p}
+const AIAVG=AIHC.reduce((a,r)=>a+r.reduce((x,y)=>x+y,0),0)/120;/* 全天平均在線率 */
+const aiBusy=t=>{const d=new Date(t||Date.now()),h=d.getHours(),w=d.getDay();let p=0;for(const r of AIHC)p+=r[h];p/=5;if(w===0||w===6)p=Math.min(1,p*1.2+.05);return p/AIAVG};/* 這個時段的熱鬧程度（1＝全天平均） */
+const aiDelay=(k,t0)=>(2+ljRng((k*16807+Math.floor(t0/6e4))>>>0)()*8)*36e5,aiForgive=(k,t0)=>ljRng((k*69621+Math.floor(t0/6e4))>>>0)()<.25;/* 記仇：每人苦練 2～10 小時才回來；約 1/4 的人氣消了不來報仇 */
 const LJGR=.012;// 成長速度：每天進度 +0.012×個人活躍度（本版自訂）
 function ljAI(){const l=ljS();return l.ai||(l.ai={t0:Date.now(),t:Date.now(),m:{},p:{}})}
 const ljPid=r=>{const m=ljAI().m;return m[r]!=null?m[r]:r};
@@ -5044,7 +5057,7 @@ let LJEQP=null;function ljEqPool(){if(LJEQP)return LJEQP;LJEQP={};for(const t in
 const LJGM=5,LJGB=.12;
 function ljGrudge(pid){const A=ljAI(),g=A.gr&&A.gr[pid];if(!g)return 0;const age=(Date.now()-g.t)/36e5;if(age>72){delete A.gr[pid];return 0}return Math.min(LJGM,g.n)*Math.min(1,age/4)}
 function ljGrudgeAdd(pid,t){const A=ljAI();A.gr=A.gr||{};const g=A.gr[pid]||(A.gr[pid]={n:0,t:0});g.n=Math.min(LJGM,g.n+1);g.t=t||Date.now()}
-const ljGrudgeRipe=pid=>{const g=ljAI().gr&&ljAI().gr[pid];return!!g&&(Date.now()-g.t)/36e5>=4};
+const ljGrudgeRipe=pid=>{const g=ljAI().gr&&ljAI().gr[pid];return!!g&&!aiForgive(pid,g.t)&&Date.now()-g.t>=aiDelay(pid,g.t)};
 function ljBot(r){const pid=ljPid(r),st=ljAI().p[pid]||[0,0],gk=ljGrudge(pid);let b;
  if(pid<=LJE){b=ljElite(pid,gk?{xm:1+LJGB*gk,gk}:undefined);b.r=r}else b=ljPersona(pid,r);/* 記仇時陣容不變，在 ljUnits 直接把屬性乘上倍率（每次 +12%） */if(gk)b.gk=gk;
  b.pid=pid;b.win+=st[0];b.lose+=st[1];return b}
@@ -5126,10 +5139,10 @@ function ljTag(F,U){U.forEach(u=>{u.ai=1});ljWithS(F,()=>U.forEach(u=>{if(HM[u.h
 function ljRefPow(){const P=Math.max(0,1-Math.log10(LJE+1)/Math.log10(LJN))+Math.max(0,(Date.now()-ljAI().t0)/864e5)*LJGR,k='ref|'+Math.floor(P*100);if(LJPC[k]==null){let v=0;try{v=ljPow(ljAiUnits(ljPersona(LJE+1,LJE+1,P)))}catch(e){}LJPC[k]=v}return LJPC[k]}
 const LJPC={};function ljBotPow(r){const b=ljBot(r),k=b.pid+'|'+(b.P!=null?Math.floor(b.P*100):'e'+Math.floor(Date.now()/36e5))+'|g'+Math.round((b.gk||0)*10);if(LJPC[k]==null){let v=0;try{v=ljPow(ljUnits(b))}catch(e){}LJPC[k]=v}return LJPC[k]}
 // 電腦掌門之間的挑戰（離線最多補算 24 小時）
-function ljAiTick(){if(!QY||!S||!S.lj)return;const A=ljAI(),now=Date.now(),hrs=Math.min(24,Math.floor((now-A.t)/36e5));if(hrs<1)return;/* 最多補算 24 小時，時間直接追上現在（之前每次只推進 24 小時，舊存檔會連續補算很久，名牌和實際對手錯開） */A.t=now-((now-A.t)%36e5);const me=ljS().rank;
- for(let h=0;h<hrs*4;h++){const z=Math.random();let c;if(z<.3)c=2+Math.floor(Math.random()*99);else if(z<.7&&me<=LJN)c=Math.max(2,Math.min(LJN,me-80+Math.floor(Math.random()*160)));else c=Math.max(2,Math.min(LJN,Math.round(Math.pow(10,Math.log10(21)+Math.random()*(Math.log10(LJN)-Math.log10(21))))));
-  const t=Math.max(1,c-1-Math.floor(Math.random()*Math.max(1,c*.03)));if(c===me||t===me||t===c)continue;
-  const pc=ljBotPow(c),pt=ljBotPow(t),pw=pc<=0?0:pt<=0?1:1/(1+Math.pow(pt/pc,3)),w=Math.random()<pw;ljStat(ljPid(c),w);ljStat(ljPid(t),!w);if(w)ljSwap(c,t)}
+function ljAiTick(){if(!QY||!S||!S.lj)return;const A=ljAI(),now=Date.now(),hrs=Math.min(24,Math.floor((now-A.t)/36e5));if(hrs<1)return;/* 最多補算 24 小時，時間直接追上現在（之前每次只推進 24 小時，舊存檔會連續補算很久，名牌和實際對手錯開） */const T0=A.t;A.t=now-((now-A.t)%36e5);const me=ljS().rank;
+ for(let hh=0;hh<hrs;hh++){const th=T0+hh*36e5+18e5,nb=Math.round(7*aiBusy(th)+Math.random()-.5);for(let q=0;q<nb;q++){const z=Math.random();let c;if(z<.3)c=2+Math.floor(Math.random()*99);else if(z<.7&&me<=LJN)c=Math.max(2,Math.min(LJN,me-80+Math.floor(Math.random()*160)));else c=Math.max(2,Math.min(LJN,Math.round(Math.pow(10,Math.log10(21)+Math.random()*(Math.log10(LJN)-Math.log10(21))))));
+  const t=Math.max(1,c-1-Math.floor(Math.random()*Math.max(1,c*.03)));if(c===me||t===me||t===c)continue;if(Math.random()>aiOn(ljPid(c),th)*1.5)continue;/* 不在線的人不會出手 */
+  const pc=ljBotPow(c),pt=ljBotPow(t),pw=pc<=0?0:pt<=0?1:1/(1+Math.pow(pt/pc,3)),w=Math.random()<pw;ljStat(ljPid(c),w);ljStat(ljPid(t),!w);if(w)ljSwap(c,t)}}
  save()}
 // 論劍前 20 名（本版自訂，使用者要求）：高等隊伍／最強隊伍，第 1 名為終極隊伍。
 // 以「等級＋整體倍率（代表裝備、修煉、閉關、緣分、小夥伴、穴位、口訣等養成）＋副屬性／巔峰屬性」模擬滿養成的對手
