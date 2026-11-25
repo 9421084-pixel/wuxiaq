@@ -551,7 +551,7 @@ function useFree(k){const F=S.fr||(S.fr={});if(k===0){const f=F[0]&&F[0].d===DAY
 let IM=null;const EQK=1,ATTR={ap:'武力',hp:'氣血',dp:'防禦',dex:'身法',mp:'內力'};
 const SLOTS=[['weapon','武器'],['dress','衣服'],['headdress','頭飾'],['shoes','鞋子'],['accessory','飾品']],SLN=Object.fromEntries(SLOTS);
 const BOXK={IB001:'IK001',IB002:'IK002',IB003:'IK003',IB065:'IK065',IB066:'IK066',IB067:'IK067'},BOXS={IB065:38888,IB066:16888,IB067:5888},GBOX=['IB003','IB003','IB002','IB001'],GKEY=['IK003','IK003','IK002','IK001'];
-const tpSum=x=>{const c=IM.tp&&IM.tp[x.t],k=Math.min(x.tp||0,c?c.length:0);return k?c[k-1][0]:0};// 原作 tpConfig.upLimit 為累計值（每階遞增），突破後每級成長只加目前那一階的值，不是逐階相加
+const tpSum=x=>{const c=IM.tp&&IM.tp[x.t],k=Math.min(x.tp||0,c?c.length:0);let r=0;for(let i=0;i<k;i++)r+=c[i][0];return r};// 原作 tpConfig.upLimit 為每階各自加的成長，逐階相加（對照使用者提供的原版進階表：不敗盔 39.3＋20 階合計 117.97＝滿階 157.27）
 const eqOf=u=>S.eq.find(x=>x.u===u),eqVal=x=>{const E=IM.eq[x.t];return Math.round(((x.b!=null?x.b:E[4])+((x.g!=null?x.g:E[5])+tpSum(x))*(x.lv-1))*EQK)};
 // 原作裝備進階：每階提高主屬性每級成長（tpConfig.upLimit），20 階，有成功率，失敗消耗材料；材料照 equipsup：1–5 階精煉進階石×階、6–10 百煉×(階−5)、11–15 千煉×1、16–20 神煉×(階−14)
 const tpNeed=n=>n<=5?['ID215',n]:n<=10?['ID216',n-5]:n<=15?['ID217',1]:['ID218',n-14];
@@ -2762,9 +2762,9 @@ function tpAfter(R,x){const B=qn(R,'tpBox');if(!B)return;const E=IM.eq[x.t],n=(x
  nm('txtName2',tpNm(x,n+1));if(fr[1])qAdd(fr[1].parentElement,itIco(E[8],86),qBox(fr[1],15));
  const[m,k]=tpNeed(n+1),have=S.items[m]||0,it=qn(B,'ccbItem1');if(it){qtx(it,'txtName',IM.it[m][0]);qtx(it,'txtNumLabel','數量:');qtx(it,'txtNum',`${have}/${k}`);{const e=qn(it,'txtNum');if(e)e.style.color=have<k?'#f00':''}const f=it.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(f)qAdd(f.parentElement,itIco(IM.it[m][4],86),qBox(f,15));it.style.left=(parseFloat(it.style.left)+80)+'px'}
  qtx(B,'txtProbability',`(進階成功率${Math.floor(c[n][1]*100)}%)`);
- const g0=(x.g!=null?x.g:E[5])+tpSum(x),up=c[n][0],v0=eqVal(x),v1=Math.round(((x.b!=null?x.b:E[4])+(g0-tpSum(x)+up)*(x.lv-1))*EQK),mx=(IM.eqr&&IM.eqr[x.t]?IM.eqr[x.t][3]:E[5])+tpSum(x);
+ const g0=(x.g!=null?x.g:E[5])+tpSum(x),up=c[n][0],v0=eqVal(x),v1=Math.round(((x.b!=null?x.b:E[4])+(g0+up)*(x.lv-1))*EQK),mx=(IM.eqr&&IM.eqr[x.t]?IM.eqr[x.t][3]:E[5])+tpSum(x);
  qtx(B,'txtFromAttr1Label',ATTR[E[3]]);qtx(B,'txtToAttr1Label',ATTR[E[3]]);qtx(B,'txtFromAttr1','+'+v0);qtx(B,'txtToAttr1','+'+v1);
- qtx(B,'txtFromAttr2Label','成長上限');qtx(B,'txtToAttr2Label','成長上限');qtx(B,'txtFromAttr2','+'+Math.round(mx*EQK*100)/100);qtx(B,'txtToAttr2','+'+Math.round((mx-tpSum(x)+up)*EQK*100)/100);
+ qtx(B,'txtFromAttr2Label','成長上限');qtx(B,'txtToAttr2Label','成長上限');qtx(B,'txtFromAttr2','+'+Math.round(mx*EQK*100)/100);qtx(B,'txtToAttr2','+'+Math.round((mx+up)*EQK*100)/100);
  /* 原作進階預覽第 3、4 行：副屬性（tpConfig addValue1／2 放大） */{const b0=eqBn(x),b1=eqBn(Object.assign({},x,{tp:n+1})),an=a=>ANAME[a]||(RDX[a]&&RDX[a][0])||a,fv=(a,v)=>'+'+(EQP.includes(a)?Math.round(v*1000)/10+'%':Math.round(v));
   for(let i=0;i<2;i++){const r=3+i;if(!b0[i])continue;qshow(B,'txtFromAttr'+r+'Label',1);qshow(B,'txtToAttr'+r+'Label',1);qshow(B,'txtFromAttr'+r,1);qshow(B,'txtToAttr'+r,1);
    qtx(B,'txtFromAttr'+r+'Label',an(b0[i][0]));qtx(B,'txtToAttr'+r+'Label',an(b1[i][0]));qtx(B,'txtFromAttr'+r,fv(b0[i][0],b0[i][1]));qtx(B,'txtToAttr'+r,fv(b1[i][0],b1[i][1]))}}
