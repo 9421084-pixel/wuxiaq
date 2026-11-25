@@ -6289,7 +6289,7 @@ function openHinfo(kind,key){if(QY||D){hhdPop(kind,key,'info');return}const old=
  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-hiclose]'))ov.remove()})}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hinfo],[data-einfo]');if(!b)return;e.stopPropagation();e.preventDefault();if(b.dataset.hinfo)openHinfo('h',b.dataset.hinfo);else openHinfo('e',+b.dataset.einfo)},true);
 
-// ---------- 小夥伴（原作 zhuwei：七星助威，七個位置依序花元寶開啟；每位隨機附加屬性與專屬弟子；所有上陣弟子得「小夥伴身價×轉化率」，最多 3 萬身價；專屬弟子上場即激活，可和陣上弟子配緣分）----------
+// ---------- 小夥伴（原作 zhuwei：七星助威，七個位置依序花元寶開啟；每位隨機附加屬性與專屬弟子；所有上陣弟子得「小夥伴身價×轉化率」，最多 10 萬身價（新版，舊版 3 萬）；專屬弟子上場即激活，可和陣上弟子配緣分）----------
 const ZWK={hp:'xue',ap:'wu',mp:'nei',dex:'shen',dp:'fang',hr:'ming',dr:'shan',chr:'bao',crr:'kang',cm:'hui'};
 const wrand=(arr,wi)=>{const t=arr.reduce((a,x)=>a+x[wi],0);let q=Math.random()*t;for(const x of arr){q-=x[wi];if(q<0)return x}return arr[0]};
 const ZWQX=()=>typeof tab!=='undefined'&&tab===12&&typeof SMV!=='undefined'&&SMV==='zr'&&SMSET===3&&!!(S&&S.smz);
@@ -6305,7 +6305,7 @@ const zwAt=t=>D.zw.at.find(x=>x[0]===t)||Object.values(ZWSKY).flat().find(x=>x[0
 const zwOk=(sl)=>{if(!sl||!sl.u)return false;const z=zwHz(sl.z);return!!(z&&z[2].includes(sl.u))};
 function zwActive(){if(!D||!D.zw)return[];return zwSlots().filter(sl=>sl&&sl.u&&!zwOnT(sl.u)&&zwOk(sl)).map(sl=>sl.u)}
 // 原作 ZhuweiUtil.getBenefit：天屬性位置須激活專屬弟子才生效，值＝身價×每點轉化（金剛／無序不取整），上限 addMax
-function zwVal(sl){if(!sl||!sl.u||!S.heroes[sl.u]||zwOnT(sl.u))return 0;const A=zwAt(sl.a);if(A&&A[0][0]==='S'){if(!zwOk(sl))return 0;const r=heroVal(sl.u)*A[3];return Math.min(A[5],A[1]==='hard'||A[1]==='random'?r:Math.ceil(r))}return A?Math.min(A[5],Math.min(30000,heroVal(sl.u))*A[3]):0}
+const ZWCAP=1e5;function zwVal(sl){if(!sl||!sl.u||!S.heroes[sl.u]||zwOnT(sl.u))return 0;const A=zwAt(sl.a);if(A&&A[0][0]==='S'){if(!zwOk(sl))return 0;const r=heroVal(sl.u)*A[3];return Math.min(A[5],A[1]==='hard'||A[1]==='random'?r:Math.ceil(r))}return A?Math.min(A[5]*ZWCAP/3e4,Math.min(ZWCAP,heroVal(sl.u))*A[3]):0}/* 新版：地屬性最多轉化 10 萬身價（舊版 3 萬），屬性上限 addMax 依比例放大 */
 // 天屬性：「激活專屬弟子後，陣上所有配緣弟子將平分該屬性」——陣上與該小夥伴有弟子緣分（已激活）的弟子平分
 function zwSkyBonus(id){const r={};if(!D||!D.zw||!S.team.includes(id))return r;zwSlots().forEach(sl=>{const A=sl&&zwAt(sl.a);if(!A||A[0][0]!=='S')return;const v=zwVal(sl);if(!v)return;const rc=S.team.filter(t=>S.heroes[t]&&yfList(t).some(k=>{const Y=D.yf[k];return Y&&(Y[1]==='hero'||Y[1]==='or_hero')&&Y[2].includes(sl.u)&&yfActive(t,k)}));if(rc.includes(id))r[A[1]]=(r[A[1]]||0)+v/rc.length});return r}
 function zwBonus(){const r={};if(!D||!D.zw)return r;for(const sl of zwSlots()){const A0=sl&&zwAt(sl.a);if(A0&&A0[0][0]==='S')continue;const v=zwVal(sl);if(v){const k=zwAt(sl.a)[1];r[k]=(r[k]||0)+v}}return r}
@@ -6420,7 +6420,7 @@ function zwView(){const sls=zwSlots(),n=sls.length,sel=sls[ZWP],GT=['ding','bing
  if(!sel){const P=D.zw.pos[ZWP];h+=`<div class="zwlock"><b>${esc(P[0])}</b><p>${ZWP===n?`開啟需花費 ${P[1]} 元寶`:'請按照順序開啟助威位置'}</p>${ZWP===n?`<button class="zwbtn" data-zwopen="1">開啟</button>`:''}</div>`}
  else{const A=zwAt(sel.a),Z=zwHz(sel.z),v=zwVal(sel),act=zwOk(sel)&&!zwOnT(sel.u);
   h+=`<div class="zwl"><button class="zwbig" data-zwpick="1"><img src="a/ui/zw/btn_zw_cubianlanyuan_up.png" alt=""><img class="zwbt" src="a/ui/zw/font_btn_zw_zhuwei2.png" alt="上場"></button><small>更換小夥伴</small></div>
-  <div class="zwc"><div class="zwr1"><b>${esc(D.zw.pos[ZWP][0])}</b><small>（最多可轉化 3 萬身價）</small></div>
+  <div class="zwc"><div class="zwr1"><b>${esc(D.zw.pos[ZWP][0])}</b><small>（最多可轉化 ${zwSky(ZWP)?6:10} 萬身價）</small></div>
    <div class="zwr2"><img src="a/ui/g${A[2]}.png" alt=""><span>所有上陣弟子</span><b>${ANAME[A[1]]}+${Math.round(v)}</b><small>（身價 ${(A[3]*100).toFixed(1)}% 轉化為${ANAME[A[1]]}）</small></div>
    <div class="zwr3"><span>小夥伴：</span><b>${sel.u?`<span class="gn${HM[sel.u].r||0}">${esc(HM[sel.u].n)}</span>（身價 ${heroVal(sel.u)}）`:'未上場'}</b></div>
    <div class="zwr3"><span>專屬弟子：</span><b>${esc(Z?(Z[2].length>1?Z[1]:HM[Z[2][0]].n):'—')}</b><img src="a/ui/zw/font_zw_${act?'yijihuo':'weijihuo'}.png" alt="${act?'已激活':'未激活'}"></div>
@@ -6449,7 +6449,7 @@ function zwAfter(){const R=document.getElementById('zwi');if(!R)return;const sls
   else qAdd(nd,`<span class="zwst2 nobm">${sl?'未上場':n===pi?(P[1]?P[1]+' 元寶開啟':'免費開啟'):'未開啟'}</span>`,st);
   const hit=qAdd(nd,`<button class="jlhit" data-zwp="${pi}" aria-label="${P[0]}"></button>`,b);hit.style.pointerEvents='auto'}
  qtx(R,'txtZhuweiName','七星小夥伴助威圖');{const e=qn(R,'txtZhuweiName');if(e)Object.assign(e.style,{writingMode:'vertical-rl',textOrientation:'upright',whiteSpace:'nowrap',width:'30px',height:'auto',left:'911px',top:ZWQX()?'250px':'172px',color:'#5a1a08',fontSize:'19px',lineHeight:'24px'})}qtx(R,'txtZhuweiDesc','使用專屬小夥伴，可和陣上弟子配緣分！');qtx(R,'txtHuanRen','更換小夥伴');qtx(R,'txtNiZhuan','更換屬性和專屬弟子');
- const SKY=zwSky(ZWP);qhide(R,'txtAttr','mcZhangu1','txtDrumNum1');qshow(R,'mcHaojiao',SKY);qshow(R,'mcZhangu',!SKY);qtx(R,'txtDrumNum',S.items[SKY?'ID085':'ID020']||0);{const e=[...R.querySelectorAll('[data-n="txtPosName"]')].pop();if(e)e.textContent=D.zw.pos[ZWP][0]}R.querySelectorAll('[data-n="txtValueLimit"]').forEach(e=>e.textContent=SKY?'(最多可轉化6萬身價)':'(最多可轉化3萬身價)');if(SKY)qtx(R,'txtZhuweiDesc','激活專屬弟子後，陣上所有配緣弟子將平分該屬性');
+ const SKY=zwSky(ZWP);qhide(R,'txtAttr','mcZhangu1','txtDrumNum1');qshow(R,'mcHaojiao',SKY);qshow(R,'mcZhangu',!SKY);qtx(R,'txtDrumNum',S.items[SKY?'ID085':'ID020']||0);{const e=[...R.querySelectorAll('[data-n="txtPosName"]')].pop();if(e)e.textContent=D.zw.pos[ZWP][0]}R.querySelectorAll('[data-n="txtValueLimit"]').forEach(e=>e.textContent=SKY?'(最多可轉化6萬身價)':'(最多可轉化10萬身價)');if(SKY)qtx(R,'txtZhuweiDesc','激活專屬弟子後，陣上所有配緣弟子將平分該屬性');
  const set=(n,k,v)=>{const e=qn(R,n);if(e)e.dataset[k]=v};set('btnInfo','zwinfo','1');set('btnShuxing','zwinfo','1');set('btnSave','zwsave','1');set('btnRestore','zwload','1');{const bs=qn(R,'btnSave'),br=qn(R,'btnRestore');if(bs)bs.disabled=!sel;if(br)br.disabled=!(sel&&S[zwSvK()]&&!Array.isArray(S[zwSvK()])&&S[zwSvK()][ZWP])}set('btnReset','zwre','1');
  G.forEach(g=>qshow(R,g,0));
  if(!sel){['txtIncrease','txtZhuanHua','txtZhuanshu','txtHero','mcGood','btnRefresh'].forEach(x=>qshow(R,x,0));{const ng=[...R.querySelectorAll('[data-n="mcNotGood"]')].pop();if(ng)ng.style.display='none'}const P=D.zw.pos[ZWP];qtx(R,'txtIncreaseDesc',ZWP===n?`開啟需花費 ${P[1]} 元寶`:'請按照順序開啟助威位置');
