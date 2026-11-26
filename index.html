@@ -8161,6 +8161,7 @@ Promise.all([fetch('a/data.json?v=6').then(r=>r.json()),fetch('a/camp.json?v=8')
  if(!S.zwdup1){S.zwdup1=1;(S.zw||[]).forEach((sl,i)=>{if(!sl||zwSky(i))return;const A=zwAt(sl.a);if(!A)return;const dup=S.zw.some((o,j)=>j<i&&o&&!zwSky(j)&&zwAt(o.a)&&zwAt(o.a)[1]===A[1]);if(dup){const P=zwPool(i).filter(a=>a[2]===A[2]);if(P.length)sl.a=wrand(P,4)[0]}});save()}
  // 掌門要求的一次性贈送：熱門俠女兌換券各 1 張（兌換券在背包使用，或到俠女商店兌換）
  if(S.sect&&!S.gxv1){S.gxv1=1;for(const it of XVGIFT)if(IM.it[it])S.items[it]=(S.items[it]||0)+1;save();setTimeout(()=>toast('已贈送熱門俠女兌換券：'+XVGIFT.filter(it=>IM.it[it]).map(it=>IM.it[it][0]).join('、')),1500)}
+ /* 掌門要求的一次性贈送：初入江湖自選箱 ×1 */if(S.sect&&!S.gib959){S.gib959=1;if(IM.it.IB959){S.items.IB959=(S.items.IB959||0)+1;save();setTimeout(()=>toast('已贈送初入江湖自選箱×1，請到行囊使用'),2200)}}
  render();
 }).catch(e=>{console.error(e);document.getElementById('app').innerHTML='<p class="lose">資料載入失敗，請重新整理頁面。</p>'});
 qyLoad().then(()=>{try{if(tab===0&&MAPV&&!busy)render()}catch(e){}}).catch(()=>{});
