@@ -2257,7 +2257,7 @@ function hdBtns(id){if(!QY)return'';const aw=awOK(id)&&['xq','yf'].includes(DTAB
  // 原版排列：魂石 → 巔峰屬性 → 弟子覺醒；按鈕字為白色一般字體（依使用者提供的原版截圖）
  return`${ssUnlock()?`<button class="dpk" data-dhs="${id}" aria-label="魂石">${qaImg('btn_biguan_z_up',50)}<span>魂石</span></button>`:''}<button class="dpk" data-dpeak="${id}" aria-label="巔峰屬性">${qaImg('btn_biguan_z_up',50)}<span>巔峰屬性</span></button>${DTAB==='xl'?`<button class="dpk" data-dtp="${id}" aria-label="修煉突破">${qaImg('btn_biguan_z_up',50)}<span>修煉突破</span></button>`:''}${aw?`<button class="dpk aw" data-dawk="${id}" aria-label="弟子覺醒">${qaImg('btn_juexing_up',50)}<span>弟子覺醒</span></button>`:''}`}
 function peakPop(id){const o=S.heroes[id];if(!o)return;const X=exAttr(id),s=hst(id),B=o.bg||{pv:0,pl:0};
- qyPop('bg_tt1',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'str_special_att_title','巔峰屬性');qtx(R,'txtQianli',`巔峰等級${B.pl||0}(剩餘未激活潛能值${B.pv||0})`);qtx(R,'str_qianli_des','巔峰等級每增加1級，弟子屬性增加1級');
+ qyPop('bg_tt1',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'str_special_att_title','巔峰屬性詳情');qtx(R,'txtQianli',`巔峰等級${B.pl||0}(剩餘未激活潛能值${B.pv||0})`);qtx(R,'str_qianli_des','巔峰等級每增加1級，弟子屬性增加1級');
   const sv=qn(R,'mcScroll');if(!sv)return;const box=qAdd(R,'',qBox(sv));box.style.overflowY='auto';box.style.pointerEvents='auto';
   const P=[['lianji','xixue'],['zhansha','podan'],['tuxi','hunhou'],['huti','poji'],['houjia','jianding'],['hard','random'],['skill_add_rate','skill_add_ap'],['absorb_add_rate','absorb_add_dp'],['absorb_del_rate','absorb_del_dp']];
   const val=a=>RDX[a]?(s[RDX[a][1]]||0):(s.su[a]||0),show=a=>RDX[a]?`${a.startsWith('absorb_del')?'-':'+'}${Math.round(val(a))}%`:suTxt(a,val(a));
@@ -2877,7 +2877,7 @@ function xlResult(){const L=XLLAST;if(!L)return;const I=D.xl.it[L.t],ok=L.hits>0
  qyPop('xujg',(R,close)=>{qshow(R,'successBG',ok);qshow(R,'spSuccess',ok);qshow(R,'failedBG',!ok);qshow(R,'spFailed',!ok);qtx(R,'txtEfxName',I[9]+':');qtx(R,'txtEfxVal','+'+L.gain);{const e=qn(R,'txtEfxVal');if(e)e.style.color='#2a9a3a'}
   qtx(R,'txtResultDesc',(ok?D.xl.msg[0]:L.gain>0?D.xl.msg[1]:D.xl.msg[2])+(L.jx?'（雞血雙倍）':'')+`　命中 ${L.hits}/${I[5]} 次`);
   pe2(qn(R,'btnOK')).onclick=()=>{close();const g=XLG();if(g.s.every(v=>v)){xlgNew(0);save();toast('三項修煉已完成，自動刷新修煉內容')}render()}})}
-function xlDetail(id){const o=S.heroes[id],P=o.xl||{};qyPop('xu3',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'txtTitle','屬性加成');
+function xlDetail(id){const o=S.heroes[id],P=o.xl||{};qyPop('xu3',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'txtTitle','屬性加成');{const bx=[...R.querySelectorAll('.qa')].find(e=>e.style.left==='204px'&&e.style.top==='374px');if(bx)bx.style.top='365px';R.querySelectorAll('[data-n^=txtSkill_],[data-n^=txtAbsorb_]').forEach(e=>e.style.top=(parseFloat(e.style.top)-9)+'px')}
  const N={Hp:'hp',Ap:'ap',Mp:'mp',Dex:'dex',Dp:'dp',Hr:'hr',Dr:'dr',Chr:'chr',Crr:'crr',Cm:'cm',Skill_Add_Rate:'skill_add_rate',Skill_Add_Ap:'skill_add_ap',Absorb_Add_Rate:'absorb_add_rate',Absorb_Add_Dp:'absorb_add_dp',Absorb_Del_Rate:'absorb_del_rate',Absorb_Del_Dp:'absorb_del_dp'};
  for(const[n,k]of Object.entries(N)){const v=P[k]||0,c=v>0?'rgb(35,156,60)':'rgb(34,34,34)';qtx(R,'txt'+n,(ANAME[k]||(RDX[k]&&RDX[k][0])||k)+':');qtx(R,'txt'+n+'Val',k.startsWith('absorb_del')?`-${v}%`:['skill_add_rate','absorb_add_rate','absorb_add_dp'].includes(k)?`+${v}%`:`+${v}`);[n,n+'Val'].forEach(q=>{const e=qn(R,'txt'+q);if(e)e.style.color=c})}})}
 // 心情藥（UseHeartDrugView）與成功率藥（UseWuxingDrugView）
