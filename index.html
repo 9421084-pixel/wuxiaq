@@ -2877,9 +2877,9 @@ function xlResult(){const L=XLLAST;if(!L)return;const I=D.xl.it[L.t],ok=L.hits>0
  qyPop('xujg',(R,close)=>{qshow(R,'successBG',ok);qshow(R,'spSuccess',ok);qshow(R,'failedBG',!ok);qshow(R,'spFailed',!ok);qtx(R,'txtEfxName',I[9]+':');qtx(R,'txtEfxVal','+'+L.gain);{const e=qn(R,'txtEfxVal');if(e)e.style.color='#2a9a3a'}
   qtx(R,'txtResultDesc',(ok?D.xl.msg[0]:L.gain>0?D.xl.msg[1]:D.xl.msg[2])+(L.jx?'（雞血雙倍）':'')+`　命中 ${L.hits}/${I[5]} 次`);
   pe2(qn(R,'btnOK')).onclick=()=>{close();const g=XLG();if(g.s.every(v=>v)){xlgNew(0);save();toast('三項修煉已完成，自動刷新修煉內容')}render()}})}
-function xlDetail(id){const o=S.heroes[id],P=xlBonus(id);/* 與弟子「修煉」頁同一套數值（之前顯示的是原始修煉點數，跟弟子頁對不上） */qyPop('xu3',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'txtTitle','屬性加成');
+function xlDetail(id){const o=S.heroes[id],P=o.xl||{};qyPop('xu3',(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;qtx(R,'txtTitle','屬性加成');
  const N={Hp:'hp',Ap:'ap',Mp:'mp',Dex:'dex',Dp:'dp',Hr:'hr',Dr:'dr',Chr:'chr',Crr:'crr',Cm:'cm',Skill_Add_Rate:'skill_add_rate',Skill_Add_Ap:'skill_add_ap',Absorb_Add_Rate:'absorb_add_rate',Absorb_Add_Dp:'absorb_add_dp',Absorb_Del_Rate:'absorb_del_rate',Absorb_Del_Dp:'absorb_del_dp'};
- for(const[n,k]of Object.entries(N)){const v=P[k]||0,c=v>0?'rgb(35,156,60)':'rgb(34,34,34)';qtx(R,'txt'+n,(ANAME[k]||(RDX[k]&&RDX[k][0])||k)+':');const sp=k.startsWith('skill')||k.startsWith('absorb'),vv=sp?Math.round(v*10)/10:Math.round(v);qtx(R,'txt'+n+'Val',sp?`+${vv}%`:`+${vv}`);[n,n+'Val'].forEach(q=>{const e=qn(R,'txt'+q);if(e)e.style.color=c})}})}
+ for(const[n,k]of Object.entries(N)){const v=P[k]||0,c=v>0?'rgb(35,156,60)':'rgb(34,34,34)';qtx(R,'txt'+n,(ANAME[k]||(RDX[k]&&RDX[k][0])||k)+':');qtx(R,'txt'+n+'Val',k.startsWith('absorb_del')?`-${v}%`:['skill_add_rate','absorb_add_rate','absorb_add_dp'].includes(k)?`+${v}%`:`+${v}`);[n,n+'Val'].forEach(q=>{const e=qn(R,'txt'+q);if(e)e.style.color=c})}})}
 // 心情藥（UseHeartDrugView）與成功率藥（UseWuxingDrugView）
 function xlDrug(kind,id){const o=S.heroes[id],L=kind==='h'?['ID080','ID023']:['ID012','ID011'],lay=kind==='h'?'xuxt':'xuhf';
  qyPop(lay,(R,close)=>{pe2(qn(R,'btnClose')).onclick=close;const fill=()=>{if(kind==='h'){qtx(R,'txtTitle','恢復心情狀態');const h=Math.round(xlHeart(o));qtx(R,'txtCurStatus','當前心情狀態：');qtx(R,'txtCurStatusVal',h);qtx(R,'txtEfxDesc','需先將弟子心情恢復至天人合一！');
@@ -5903,7 +5903,7 @@ function xlTabAfter(id){const o=S.heroes[id];if(!o||!QY)return;{const H=document
  const P=document.querySelector('.xlp .qy'),Hh=document.querySelector('.xlh .qy');
  if(P){qtx(P,'txtShengwangVal',S.sw||0);qtx(P,'txtSuccessRateVal',(xlRate(o)*100).toFixed(1)+'%');
   for(const[k,n]of XLKEYS){const v=Math.round(xb[k]||0),lim=Math.round((D.xl.lim[k]||0)/(fl(k)?10:1))+(fl(k)?0:((o.xtp||{})[k]||0));qtx(P,'txt'+n+'Val','+'+v);qtx(P,'txt'+n+'Limit','/'+lim);qshow(P,'txt'+n+'Limit',1);{const ve=qn(P,'txt'+n+'Val'),le=qn(P,'txt'+n+'Limit');if(ve&&le&&!fl(k))le.style.left=(parseFloat(ve.style.left)+ve.offsetWidth+2)+'px'}const c=v>0?G:'';[qn(P,'txt'+n),qn(P,'txt'+n+'Val')].forEach(e=>e&&(e.style.color=c))}
-  for(const[k,n]of XLSP){const v=Math.round((xb[k]||0)*10)/10;/* 每點 0.5%，顯示到小數一位（之前四捨五入，雞血加倍看不出來） */qtx(P,'txt'+n+'Val',`+${v}%`);const c=v>0?G:'';[qn(P,'txt'+n),qn(P,'txt'+n+'Val')].forEach(e=>e&&(e.style.color=c))}
+  for(const[k,n]of XLSP){const v=Math.round(xb[k]||0);qtx(P,'txt'+n+'Val',`+${v}%`);const c=v>0?G:'';[qn(P,'txt'+n),qn(P,'txt'+n+'Val')].forEach(e=>e&&(e.style.color=c))}
   qtx(P,'txtXiulianUpperLimit',`特殊修煉最高上限${D.xl.lim.skill_add_rate}%或${D.xl.lim.skill_add_rate}`);
   qn(P,'btnUpgrade').onclick=()=>{XLV=id;XLRES=null;render();window.scrollTo(0,0)};
   pe2(qn(P,'btnEatDrug')).onclick=()=>xlDrug('b',id);
