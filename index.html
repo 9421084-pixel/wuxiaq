@@ -7792,9 +7792,9 @@ function mapView(home){if(!WM)return'<p class="mut">地圖載入中…</p>';cons
   if(ci===cur&&open)h+=`<div class="wmsw" style="left:${lx+17-38}px;top:${ly-118}px"></div>`;
   h+=`<div class="wml${open?' on':''}" style="left:${lx}px;top:${ly}px" ${open?`data-wm="${ci}"`:''}><img src="a/map/main_${open?'hongyin':'huiyin'}.png" alt=""><span class="wmn" style="top:${(4-nm.length)*10+6}px">${nm.map(x=>`<i>${esc(x)}</i>`).join('')}</span>${open?'':'<img class="wmlk" src="a/map/juanzhou_suo2.png" alt="未開放">'}</div>`}
  return h+`</div></div></div>`}
-// 星級：一星通關；二星＝我方陣亡不超過 1 人且 8 回合內；三星（完美）＝無人陣亡且 3 回合內（原作提示：三回合內結束戰鬥可以獲得三星評價）
+// 星級（原作提示「三回合內結束戰鬥可以獲得三星評價」，只看回合、不看陣亡）：3 回合內獲勝＝三星；第 4、5 回合獲勝＝二星；進入內力決戰才分勝負＝一星（二星、一星的分法為本版自訂）
 function starRate(b){const rounds=b.steps.length?b.steps[b.steps.length-1].r+1:1,dead=b.A.filter(u=>u.hp<=0).length;
- const n=b.nl?1:dead===0&&rounds<=3?3:dead<=1&&rounds<=8?2:1;return{n,rounds,dead,alive:b.A.length-dead,tot:b.A.length}}
+ const n=b.nl?1:rounds<=3?3:2;return{n,rounds,dead,alive:b.A.length-dead,tot:b.A.length}}
 const stOf=(d,i)=>(S.st||{})[d+'|'+i]||0;
 function sweep(times){const{d,i}=S.cur;if(busy||stOf(d,i)<3)return;if(lcLeft(d,i)<times){lcReset(d,i);return}if(raidLeft()<times){toast(`今日掃蕩次數已用完（今日可掃蕩次數：0/${vipRaid()}），提升 VIP 等級可增加次數`);return}const c=cfTick();if(c.tl<times){tiliLow();return}c.tl-=times;S.raid.n+=times;lcUse(d,i,times);const msgs=[];let wx=0;for(let t=0;t<times;t++){msgs.push(reward(d,i,false).replace(/^勝利！/,''));wx+=cfRow()[1];cfExp(cfRow()[1])}SWX={w:wx,hx:(CP.lv[LIST[d][i].li].x||0)*times};
  last=null;save();render();sweepPop(times,msgs)}
