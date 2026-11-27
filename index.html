@@ -2750,7 +2750,7 @@ function zlPass(x){let ori=null;const sl=IM.eq[x.t][1];
    const si=qn(n,'spIcon');if(si)qAdd(si.parentElement,itIco(E[8],86),{l:parseFloat(si.style.left),t:parseFloat(si.style.top),w:86,h:86});pe2(qn(n,'btnShuxing')).onclick=()=>zlTip(y)};
   const draw=()=>{R.querySelectorAll('.zlx').forEach(e=>e.remove());fillN(qn(R,'mcTar'),x);const mo=qn(R,'mcOri');if(mo){mo.style.visibility=ori?'visible':'hidden';if(ori)fillN(mo,ori)}
    const L=cand();qshow(R,'str_no_pass_equip',!L.length);const sv=qn(R,'mcScroll');if(sv&&L.length){const b=qBox(sv),box=qAdd(sv.parentElement,'',b);box.classList.add('zlx');box.style.overflowY='auto';box.style.pointerEvents='auto';
-    L.forEach((y,j)=>{const d=document.createElement('div');d.className='qa';d.style.cssText=`left:0;top:${j*120}px;width:${b.w}px;height:120px;cursor:pointer`;d.innerHTML=`<div class="qa" style="left:0;top:0">${QY.L.zl_chuancheng_node2}</div>`;box.appendChild(d);
+    L.forEach((y,j)=>{const d=document.createElement('div');d.className='qa';d.style.cssText=`left:0;top:${j*120}px;width:${b.w}px;height:120px;cursor:pointer;pointer-events:auto`;d.innerHTML=`<div class="qa" style="left:0;top:0">${QY.L.zl_chuancheng_node2}</div>`;box.appendChild(d);
      const E=IM.eq[y.t];qtx(d,'txtName',E[0]);{const e=qn(d,'txtName');if(e)e.style.color=GCOL[E[2]]}qtx(d,'str_ui_36','等級:');qtx(d,'txtLevel',y.lv);qshow(d,'mcChosen',ori===y);qshow(d,'characterLian',1);qshow(d,'spGems',eqHasGem(y));qhide(d,'spSummit','txtSummit');
      const si=qn(d,'spIcon');if(si)qAdd(si.parentElement,itIco(E[8],86),{l:parseFloat(si.style.left),t:parseFloat(si.style.top),w:86,h:86});d.onclick=()=>{ori=y;draw()}})}
    bmApply(R)};
@@ -2794,7 +2794,7 @@ function tpPass(x){let ori=null;const E=IM.eq[x.t];
    n.querySelectorAll('.tpi').forEach(e=>e.remove());const f=n.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(f)qAdd(f.parentElement,itIco(Y[8],86),qBox(f,15)).classList.add('tpi')};
   const draw=()=>{R.querySelectorAll('.tpx').forEach(e=>e.remove());fill(qn(R,'ccbTo'),x,'繼承裝備');fill(qn(R,'ccbFrom'),ori,'傳承裝備');{const b=qn(R,'btnPass');if(b)b.style.filter=ori?'':'grayscale(1)'}
    const L=cand();qshow(R,'txtNoEquip',!L.length);const sv=qn(R,'mcScroll');if(sv&&L.length){const b=qBox(sv),box=qAdd(sv.parentElement,'',b);box.classList.add('tpx');box.style.overflowY='auto';box.style.pointerEvents='auto';
-    L.forEach((y,j)=>{const d=document.createElement('div');d.className='qa';d.style.cssText=`left:0;top:${j*120}px;width:${b.w}px;height:120px;cursor:pointer`;d.innerHTML=`<div class="qa" style="left:0;top:0">${QY.L.tp_jinjie_chuancheng_node2}</div>`;box.appendChild(d);
+    L.forEach((y,j)=>{const d=document.createElement('div');d.className='qa';d.style.cssText=`left:0;top:${j*120}px;width:${b.w}px;height:120px;cursor:pointer;pointer-events:auto`;d.innerHTML=`<div class="qa" style="left:0;top:0">${QY.L.tp_jinjie_chuancheng_node2}</div>`;box.appendChild(d);
      const Y=IM.eq[y.t];qtx(d,'txtName',tpNm(y,y.tp||0));{const e=qn(d,'txtName');if(e)e.style.color=GCOL[Y[2]]}qtx(d,'str_ui_36','等級:');qtx(d,'txtLevel',y.lv);qshow(d,'mcChosen',ori===y);qshow(d,'characterLian',zlHas(y));qshow(d,'spGems',eqHasGem(y));qhide(d,'spSummit','txtSummit');
      const f=d.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(f)qAdd(f.parentElement,itIco(Y[8],86),qBox(f,15));d.onclick=()=>{ori=y;draw()}})}
    bmApply(R)};
