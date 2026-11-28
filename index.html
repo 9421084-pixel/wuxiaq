@@ -4349,7 +4349,7 @@ function xfPop(){const P=xfPV();if(!P)return;const L=xfRank(P),RS=xfRS(P);qyPop(
 function trackGold(o){if(!o)return o;let g=+o.gold||0;Object.defineProperty(o,'gold',{get:()=>g,set:v=>{v=+v||0;if(v<g&&!o._ng){crS(o).spent+=g-v;if(typeof xfP==='function'&&xfP())xfS(o).spent+=g-v;if(o===S&&typeof gbAdd==='function')gbAdd('yb',g-v);if(o===S&&typeof qynS==='function'&&o.heroes)qynS().sp+=g-v;const l0=typeof vipLv==='function'&&o===S?vipLv():-1;o.vipx=(o.vipx||0)+(g-v);if(l0>=0)vipChk(l0)}g=v},enumerable:true,configurable:true});return o}
 function crTodo(){const c=crS();return CRT.filter((t,i)=>c.spent>=t&&!c.got[i]).length}
 function xfTodo(){const P=xfPV();if(!P)return 0;const c=xfS();if(Date.now()>=P.end){const r=xfMyRank(P);return!c.rk&&r&&xfOkR(P,r)?1:0}return 0}//return CRT.filter((t,i)=>c.spent>=t&&!c.got[i]).length}
-function crItems(i){return CRW[crSet(crWk())*4+i]}
+/* 使用者指定：第 4 檔禮包加一張兌換券，每週輪替（四護法→武學宗師→仗劍），可到隱秘黑市兌換特殊角色 */const CRTK=['ID1528','ID1442','ID1729'];function crItems(i){const w=crWk(),L=CRW[crSet(w)*4+i];return i===3?L.concat([[CRTK[((w%3)+3)%3],1]]):L}
 function crName(id){return IM.it[id]?IM.it[id][0]:id}
 // 原作道具詳情（ItemDetailView：ui_beibao/a_daoju_tiptongyong2_ui）
 function itemTip(id,X){if(!X&&!IM.it[id]){if(IM.eq[id]||IM.wx[id]||IM.fm[id]||HM[id]||/^IM00[124]$/.test(id))dropTip(id);return}const I=X?X.I:IM.it[id];if(!I)return;if(QY&&QY.L.itemd){const ov=qyPop('itemd',(R,close)=>{const acc=ACC;ACC=0;qhide(R,'txtPart','txtCount','txtPart1','mcSurprise','mcSurpriseBg','txtCanSnatch','btnLeft','btnRight','mcLeft','mcRight','txtUse','mcIcon');if(acc){const t=qn(R,'txtClose');if(t)qIm(t,'art_font_btn_jiesou')}
@@ -8167,7 +8167,7 @@ Promise.all([fetch('a/data.json?v=7').then(r=>r.json()),fetch('a/camp.json?v=8')
  CP.ch.forEach((ch,ci)=>ch.d.forEach(ls=>ls.forEach(li=>{LCH[li]=ci})));for(const k in D.sk)D.sk[k].id=k;for(const h of D.h){HM[h.id]=h;if(h.r!=null&&h.st)POOL[h.r].push(h)}ntfInit();
  CP.ch.forEach((ch,ci)=>ch.d.forEach((ls,d)=>ls.forEach((li,k)=>LIST[d].push({c:ci,li,k}))));
  migrate();
- if(!S.nt0){for(const id in NTF)if(S.heroes[id])S.heroes[id].nt=1;S.nt0=1}
+ {const M={CR12:'ID1528',CR15:'ID1442',CR08:'ID1729'};for(const a in M)if(S.items&&S.items[a]){S.items[M[a]]=(S.items[M[a]]||0)+S.items[a];delete S.items[a]}}if(!S.nt0){for(const id in NTF)if(S.heroes[id])S.heroes[id].nt=1;S.nt0=1}
  if(S.v===2){let r=0;for(const k in S.own||{})r+=S.own[k]*800;for(const k in S.frag||{})r+=S.frag[k]*100;S.silver+=r;delete S.own;delete S.frag;for(const id in S.heroes)S.heroes[id].e={};S.v=3;S.eq=[];S.items={};S.wx={};S.pc={};S.uid=1;starterKit()}
  for(const id in S.heroes){const o=S.heroes[id];if(o.star){for(let k=1;k<o.star;k++)S.souls[id]=(S.souls[id]||0)+10*k;delete o.star;o.tp=o.tp||0}}
  if(!S.fm||!Object.keys(S.fm).length){const c=Object.keys(IM.fm).filter(k=>IM.fm[k][1]===1&&IM.fm[k][3].every(x=>['hp','ap','dp','dex','mp'].includes(x[0])));const f=pick(c);S.fm={[f]:{lv:1}};S.cfm=f}
