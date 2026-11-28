@@ -5108,18 +5108,21 @@ function ljPersona(pid,r,P0){const T=QY.T.lj,P=P0!=null?P0:ljProg(pid),R0=ljRng(
  return{r,pid,name,lv:hl,al,hs,fm,flv,exp,win,lose,P}}
 // 依各系統組出這位電腦掌門的「存檔」（只在要戰鬥、查看陣容時才組）
 function ljAiSave(b){const P=b.P,P1=Math.min(1,P),R=ljRng(b.pid*9973+Math.floor(P*50)),cl=CLV[Math.max(1,Math.min(CLV.length,b.al))-1],F={...S,sect:b.name,heroes:{},team:[],tpos:{},eq:[],wx:{},cfm:b.fm,fm:{[b.fm]:{lv:b.flv}},kj:null,zw:[],qy:{},gems:{}};
+ const PY=b.pay!=null?b.pay:ljPay(b.pid),yfP=aiC((P1-.25)/.5)*(.4+.6*PY),RY=ljRng(b.pid*4241+17);/* 湊緣分的機率：進度越高、越課金越會湊 */
  const gr=P<.25?0:P<.45?1:P<.7?2:3,EP=ljEqPool(),wxk=Object.keys(IM.wx).filter(t=>['hp','ap','mp','dex','dp'].includes(IM.wx[t][2])),wg=P<.4?1:P<.8?2:3;let u=1;
  b.hs.forEach((id,i)=>{const H=HM[id],o={lv:b.lv,exp:0,tp:0,e:{},xl:{},jl:[],sl:Math.max(1,Math.min(6,Math.round(1+5*P1)))};/* 天賦武學等級：隨進度 1～6 級（玩家吞書最高 6 級；緣分加級另計） */F.heroes[id]=o;F.team.push(id);F.tpos[id]=i;
   // 裝備：等級（丁～甲）隨進度提升，強化等級為門派強化上限的 35%～95%
-  for(const[sl]of SLOTS){const L=(EP[gr]&&EP[gr][sl])||(EP[Math.max(0,gr-1)]&&EP[Math.max(0,gr-1)][sl]);if(!L||!L.length)continue;const t=L[Math.floor(R()*L.length)],Q=IM.eqr[t],x={u:u++,t,lv:Math.max(1,Math.round((cl[3]||1)*Math.min(.95,.35+.6*P1+(R()-.5)*.1))),b:Math.round((Q[0]+Q[1])/2),g:Math.round((Q[2]+Q[3])/2*100)/100};F.eq.push(x);o.e[sl]=x.u}
+  const YE={},YW=[];if(RY()<yfP)for(const k of aiYfList(id)){const Y=D.yf[k];if(!Y)continue;if(Y[1]==='equip')for(const t of Y[2]){if(IM.eq[t]&&IM.eqr[t]&&!YE[IM.eq[t][1]]){YE[IM.eq[t][1]]=t;break}}else if(Y[1]==='skill')for(const t of Y[2])if(IM.wx[t]&&t!==H.sid&&!YW.includes(t)){YW.push(t);break}}
+  for(const[sl]of SLOTS){const L=(EP[gr]&&EP[gr][sl])||(EP[Math.max(0,gr-1)]&&EP[Math.max(0,gr-1)][sl]);if(!YE[sl]&&(!L||!L.length))continue;const t=YE[sl]||L[Math.floor(R()*L.length)],Q=IM.eqr[t],x={u:u++,t,lv:Math.max(1,Math.round((cl[3]||1)*Math.min(.95,.35+.6*P1+(R()-.5)*.1))),b:Math.round((Q[0]+Q[1])/2),g:Math.round((Q[2]+Q[3])/2*100)/100};F.eq.push(x);o.e[sl]=x.u}
   // 武學：1～4 格，品級與等級隨進度提升
-  const nw=Math.min(4,1+Math.floor(b.lv/25)),pool=wxk.filter(t=>IM.wx[t][1]===wg);const pk=new Set();for(let k=0;k<nw&&pool.length;k++){let t=pool[Math.floor(R()*pool.length)];for(let j=0;j<6&&pk.has(t);j++)t=pool[Math.floor(R()*pool.length)];if(pk.has(t))continue;pk.add(t);o.e[wxSlots[k]]=t;F.wx[t]=F.wx[t]||{lv:Math.max(1,Math.round(1+(Math.min(WGMAX,IM.wx[t][5]||16)-1)*P1)),n:9}/* 電腦掌門的武功等級不超過玩家能升到的上限（吞書最高 6 級） */}
+  const nw=Math.min(4,1+Math.floor(b.lv/25)),pool=wxk.filter(t=>IM.wx[t][1]===wg);const pk=new Set();for(let k=0;k<nw&&(pool.length||YW.length);k++){let t=YW[k]||pool[Math.floor(R()*pool.length)];for(let j=0;j<6&&pk.has(t);j++)t=pool[Math.floor(R()*pool.length)];if(pk.has(t))continue;pk.add(t);o.e[wxSlots[k]]=t;F.wx[t]=F.wx[t]||{lv:Math.max(1,Math.round(1+(Math.min(WGMAX,IM.wx[t][5]||16)-1)*P1)),n:9}/* 電腦掌門的武功等級不超過玩家能升到的上限（吞書最高 6 級） */}
   // 修煉：五項基礎屬性，加成約為弟子本身數值的 0～25%
   if(D.xl){const f=1+GROW*(b.lv-1),base={hp:H.st[0],ap:H.st[1],dp:H.st[2],dex:H.st[3],mp:H.st[5]||0};for(const a in base){const g=D.xl.g[a];if(g&&base[a])o.xl[a]=Math.round(.25*P1*base[a]*f/(g*b.lv))}}
   // 經脈：每 15 級開一個穴位（最多 8 個），穴位等級隨進度提升
   if(D.jl){const z=H.zq||[100,1,15],n=Math.min(8,Math.floor(b.lv/(z[2]||15))),ks=Object.keys(D.jl).filter(k=>!isJB(k)&&D.jl[k][5]>0);for(let k=0;k<n&&ks.length;k++)o.jl.push({t:ks[Math.floor(R()*ks.length)],lv:Math.max(1,Math.round(JLMAX*P1*.7)),x:0})}
    // 穴位耗用的真氣不超過該弟子的真氣上限（逐一降低最高的穴位等級）
    if(D.jl){const z=H.zq||[100,1,15],tot=Math.round(z[0]+z[1]*(b.lv-1)),c=x=>D.jl[x.t]?D.jl[x.t][4]:0;let used=o.jl.reduce((a,x)=>a+c(x)*x.lv,0);while(used>tot&&o.jl.length){const m=o.jl.reduce((p,x)=>x.lv*c(x)>p.lv*c(p)?x:p);if(m.lv>1){m.lv--;used-=c(m)}else{o.jl.splice(o.jl.indexOf(m),1);used-=c(m)}}}});
+ if(RY()<yfP){const c={};for(const id of F.team)for(const k of aiYfList(id)){const Y=D.yf[k];if(Y&&Y[1]==='formation')for(const f of Y[2])if(IM.fm[f])c[f]=(c[f]||0)+1}const bf=Object.keys(c).sort((x,y)=>c[y]-c[x])[0];if(bf){F.cfm=bf;F.fm={[bf]:{lv:b.flv}}}}
  try{aiDev(F,b,b.dep!=null?b.dep:P1,b.pay!=null?b.pay:ljPay(b.pid),ljRng(b.pid*7+3+Math.floor(P*50)))}catch(e){console.error(e)}
  return F}
 // 一般電腦掌門的課金程度（本版自訂，依業界常見比例）：約 70% 免費、20% 小課、8% 中課、2% 大課
@@ -5188,11 +5191,21 @@ const LJTOP1=['HA339','HA345','HA341','HA338','HA355','HA361','HA343'];
 const LJE=30,LJAL=.7;
 const ljTierP=r=>r===1?2.5:r===2?2.2:r===3?2:r<=10?1.8-(r-4)*.45/6:r<=20?1.3-(r-11)*.3/9:.98-(r-21)*.18/9;
 function ljPS(){const A=ljAI(),now=Date.now(),cur=ljPP();if(!(A.ps>0)){A.ps=A.p0=cur;A.pst=now}else{const dt=now-(A.pst||now);if(dt>=6e4){if(cur>A.ps)A.ps+=(cur-A.ps)*Math.min(1,dt/864e5);A.pst=now}}const p0=A.p0||A.ps;return p0*Math.pow(A.ps/p0,LJAL)}
+/* 本版自訂（使用者要求）：論劍前 10 名有強烈的變強慾望——看到玩家變強就砸錢追趕，約 2 小時追上玩家「現在」的戰力（不打折），
+   目標＝玩家戰力×倍數：第 1 名 1.3 倍、第 2 名 1.25、第 3 名 1.2，第 4～10 名 1.15 → 0.95；只升不降 */
+const ljTop10F=r=>r===1?1.3:r===2?1.25:r===3?1.2:1.15-(r-4)*.2/6;
+function ljPS10(){const A=ljAI(),now=Date.now(),cur=ljPP();if(!(A.ps10>0)){A.ps10=Math.max(cur*.5,A.ps||0);A.pst10=now}else{const dt=now-(A.pst10||now);if(dt>=6e4){if(cur>A.ps10)A.ps10+=(cur-A.ps10)*Math.min(1,dt/72e5);A.pst10=now}}return A.ps10}
+/* 本版自訂（使用者要求）：電腦掌門會湊緣分——陣容盡量湊齊弟子緣分（換掉湊不到緣分的人），裝備、武學、陣法優先用緣分指定的 */
+const aiYfHero=(h,T)=>{let n=0;for(const k of (HM[h]&&HM[h].yf)||[]){const Y=D.yf[k];if(!Y)continue;if(Y[1]==='hero'&&Y[2].every(x=>T.includes(x)))n++;else if(Y[1]==='or_hero'&&Y[2].some(x=>x!==h&&T.includes(x)))n++}return n};
+const aiYfCnt=T=>T.reduce((a,h)=>a+aiYfHero(h,T),0);
+function aiYfTeam(hs,pool){for(let it=0;it<4;it++){let best=aiYfCnt(hs),sw=null;for(let i=0;i<hs.length;i++){if(D.sk[HM[hs[i]].sid]&&D.sk[HM[hs[i]].sid].buff)continue;for(const c of pool){if(hs.includes(c))continue;const T=hs.slice();T[i]=c;const v=aiYfCnt(T);if(v>best){best=v;sw=[i,c]}}}if(!sw)break;hs[sw[0]]=sw[1]}return hs}
+const aiYfList=h=>{const H=HM[h];if(!H)return[];const A=awD(h);return[...(H.yf||[]),...((A&&A[1])||[])]};
 function ljElite(r,o){o=o||{};const sd=o.sd||0,KB=r+(sd?'s'+sd:'')+(o.gk?'g'+Math.round(o.gk*10):''),T=QY.T.lj,R=ljRng((sd||r)*7919+13),t=(LJE+1-r)/LJE,lv=Math.round(70+153*Math.pow(t,1.3)),al=Math.min(97,Math.round(60+37*t));
  const pool=D.h.filter(h=>h.r===3&&h.st&&h.sid&&D.sk[h.sid]&&(h.val?h.val[0]:0)>=200).sort((a,b)=>(b.val?b.val[0]:0)-(a.val?a.val[0]:0)).map(h=>h.id);
  let hs;if(r===1&&!sd)hs=LJTOP1.filter(id=>HM[id]&&HM[id].st);else{const top=pool.slice(0,Math.max(14,Math.round(14+26*(1-t)))),used=new Set();hs=[];
   const bf=top.filter(id=>D.sk[HM[id].sid].buff);if(bf.length){const b=bf[Math.floor(R()*bf.length)];hs.push(b);used.add(b)}
   while(hs.length<7){const c=top[Math.floor(R()*top.length)];if(!used.has(c)){used.add(c);hs.push(c)}}
+  aiYfTeam(hs,top);
   const bi=hs.findIndex(id=>D.sk[HM[id].sid].buff);if(bi>0){const[x]=hs.splice(bi,1);hs.splice(4,0,x)}}
  const FA=Object.keys(IM.fm).filter(f=>IM.fm[f][1]===3),fm=r===1&&!sd?(IM.fm.FA000?'FA000':FA[0]):FA[Math.floor(R()*FA.length)];
  const mul=r===1?3.3:+(1.15+1.85*Math.pow(t,1.5)).toFixed(2),k=r===1?1.15:t;
@@ -5204,7 +5217,7 @@ function ljElite(r,o){o=o||{};const sd=o.sd||0,KB=r+(sd?'s'+sd:'')+(o.gk?'g'+Mat
  // 原本的「整體倍率」改成在這套養成之上的調整倍率，使總戰力與舊版相同（不因穿上裝備而突然變強），且至少為玩家出戰陣容戰力的一定倍數（第 1 名 1.8 倍、第 5 名約 1.35 倍、第 20 名約 0.85 倍；本版自訂）
  // 本版自訂：先調整養成深度（覺醒、閉關、寶石……實際配到對手身上）讓戰力接近目標，再用整體倍率補差距；課長的養成深度有下限（第 1～3 名 60%、4～10 名 50%、11～20 名 40%、21～30 名 30%），你越強他們練得越深
  let dep=ljTierDK(r)[0];const pay=ljTierDK(r)[1],lvd=d=>Math.max(30,Math.round(lv*(.3+.7*d))),ald=d=>Math.max(20,Math.round(al*(.55+.45*d)));// 等級也算養成的一部分
- {const tgt=(o.xm||1)*Math.max(ljPS()*ljTierP(r),S.lj&&S.lj.ai?ljRefPow()*1.25*ljTierP(r)/ljTierP(LJE):0),PID=sd?1e6+sd:r,pw=d=>{const k='ed|'+KB+'|'+Math.round(d*100);if(LJPC[k]==null){try{LJPC[k]=ljPow(ljAiUnits({pid:PID,tr:r,P:1,name:'',lv:lvd(d),al:ald(d),hs,fm,flv:FMAX,dep:d,pay}))}catch(e){LJPC[k]=0}}return LJPC[k]};
+ {const tgt=(o.xm||1)*Math.max(r<=10?ljPS10()*ljTop10F(r):0,ljPS()*ljTierP(r),S.lj&&S.lj.ai?ljRefPow()*1.25*ljTierP(r)/ljTierP(LJE):0),PID=sd?1e6+sd:r,pw=d=>{const k='ed|'+KB+'|'+Math.round(d*100);if(LJPC[k]==null){try{LJPC[k]=ljPow(ljAiUnits({pid:PID,tr:r,P:1,name:'',lv:lvd(d),al:ald(d),hs,fm,flv:FMAX,dep:d,pay}))}catch(e){LJPC[k]=0}}return LJPC[k]};
   const kc='ec|'+KB;if(LJPC[kc]==null){const g1=pw(dep);try{const b1={hs,lv:lvd(dep),al:ald(dep),fm,flv:FMAX,pid:PID,tr:r,dep,pay,bo:{...bo,mul:1,gear:true}};LJPC[kc]=g1>0?ljPow(ljWithS(ljEliteF(b1),()=>myTeam()).map(u=>ljBoU(u,b1.bo)))/g1:1}catch(e){LJPC[kc]=1}}
   const ra=LJPC[kc]||1,kd='edd|'+KB+'|'+Math.round(Math.log(Math.max(1,tgt))*25);
   if(LJPC[kd]==null){const fl=Math.min(dep,o.fl||(r<=3?.6:r<=10?.5:r<=20?.4:.3));let lo=fl,hi=dep;if(pw(hi)*ra<=tgt)LJPC[kd]=hi;else{for(let i=0;i<7;i++){const m=(lo+hi)/2;if(pw(m)*ra>tgt)hi=m;else lo=m}LJPC[kd]=Math.round(lo*100)/100}}
