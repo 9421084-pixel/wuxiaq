@@ -2810,10 +2810,15 @@ function yfDes(id,k){const[n,ty,g]=D.yf[k],nm=x=>(HM[x]&&HM[x].n)||(IM.eq[x]&&IM
 function yfRed(k){const B=D.yf[k][3]||{},o=[];for(const a of YFP)if(B[a])o.push(`${ANAME[a]||a}+${Math.round(B[a]*100)}%`);for(const a of YFF)if(B[a])o.push(`${ANAME[a]}+${Math.round(B[a])}`);for(const a in B)if(RDX[a])o.push(`${RDX[a][0]}${a.startsWith('absorb_del')?'-':'+'}${B[a]}%`);if(D.yf[k][4])o.push(`天賦武學+${Math.round(D.yf[k][4])}`);return o.join(' ')}
 const yfNormal=id=>yfList(id).filter(k=>!awMarr(id).includes(k));
 function yfRight(){return`<div class="scl yfp" data-w="546" data-h="468"><div class="scli qy" style="width:546px;height:468px;overflow:hidden"><div class="qa" id="yfr" style="left:-399px;top:0">${QY.L.yf_ui1}</div></div></div>`}
+// 仗劍不屈（原作 HeroUtils.buquMarriageActiveNum／isNotDeadGroup，資料 skillsexActive）：在擁有的仗劍四弟子身上，數下列 20 條緣分已啟動幾條（覺醒緣分需達到對應星級）
+const BQH={HA004:['MA10117','MA10118','MA10119','MA10120','MA10121'],HA003:['MA10122','MA10123','MA10124','MA10125','MA10126'],HA027:['MA10127','MA10128','MA10129','MA10130','MA10131'],HA045:['MA10132','MA10133','MA10134','MA10135','MA10136']};
+function bqNum(){let n=0;for(const h in BQH){if(!S.heroes[h])continue;const aw=awMarr(h),nm=yfNormal(h);for(const k of BQH[h])if((nm.includes(k)||aw.includes(k))&&yfActive(h,k))n++}return n}
 function yfAfter(id){const R=document.getElementById('yfr');if(!R)return;const H=HM[id],aw=awOK(id);if(!aw)YFK='n';const ids=YFK==='a'?awMarr(id):yfNormal(id);
  qtx(R,'txtTitle',YFK==='a'?'覺醒緣分':'江湖緣分');qtx(R,'txtDesc',H.d||'');{const e=qn(R,'txtDesc');if(e){e.style.whiteSpace='normal';e.style.width='430px';qScrollTxt(e)}}
  qshow(R,'btnSwitch',aw);qshow(R,'spAwake',aw&&YFK==='n');qshow(R,'spJianghu',aw&&YFK==='a');if(aw){pe2(qn(R,'btnSwitch')).onclick=()=>{YFK=YFK==='a'?'n':'a';render()};['spAwake','spJianghu'].forEach(k=>{const e=qn(R,k);if(e)e.parentElement.appendChild(e)})}
- const box=qAdd(R,`<div class="yfl">${ids.length?ids.map(k=>`<div class="yfr nobm">${esc(D.yf[k][0])}:${esc(yfDes(id,k))}<span>${cyTxt(' '+yfRed(k))}</span></div>`).join(''):`<div class="yfr nobm">${YFK==='a'?'激活星級可獲覺醒緣分！':'無'}</div>`}</div>`,{l:461,t:180,w:440,h:288});box.style.pointerEvents='auto';box.style.overflowY='auto';box.classList.add('nosb');dragPanY(box);bmApply(R)}
+ const box=qAdd(R,`<div class="yfl">${ids.length?ids.map(k=>`<div class="yfr nobm">${esc(D.yf[k][0])}:${esc(yfDes(id,k))}<span>${cyTxt(' '+yfRed(k))}</span></div>`).join(''):`<div class="yfr nobm">${YFK==='a'?'激活星級可獲覺醒緣分！':'無'}</div>`}</div>`,{l:461,t:180,w:440,h:288});box.style.pointerEvents='auto';box.style.overflowY='auto';box.classList.add('nosb');dragPanY(box);
+ /* 原作：仗劍四弟子的緣分頁顯示「不屈」與已啟動的緣分數（x/20） */if(BQH[id]){const n=bqNum(),t=qAdd(R,`<div class="nobm" title="仗劍闖天涯弟子獲得不屈效果所需激活緣分數" style="font:700 19px ${FBA};color:${n>=20?'rgb(35,156,60)':'rgb(186,50,26)'};white-space:nowrap">不屈(${n}/20)</div>`,{l:770,t:150,w:140,h:26});t.style.pointerEvents='auto'}
+ bmApply(R)}
 // ---------- 弟子修煉（原作 XiuLianView：UI_hero/a_xiulian_uib_1；三個修煉項目全門派共用，各練一次，三項都練完自動免費刷新）----------
 // 原作規則：普通刷新消耗修煉牌、特殊刷新消耗神煉牌（必出甲級）、勾選一鍵刷新＝普通刷新直到出現甲級；開練前可勾選雞血（雙倍屬性）；
 //  每項修煉有固定出手次數（attempts），每次依修煉成功率判定是否命中，命中次數×1 點即本次所得（雞血×2），超過上限截斷。
@@ -3039,8 +3044,9 @@ function sxStart(A,E,U){
    {const d=sxOf(u,'subNotDead');if(d){const o=T.filter(x=>x!==u&&x.hp>0&&!(T.sbp&&T.sbp.has(x.pos)));if(o.length){const x=pick(o);x.nd={v:d.val1,n:'三屍腦神丹'}}}}
    // 聖教主（傲.教主）：全隊身法＋內力總和 10% 轉成自身氣血
    {const d=sxOf(u,'xixingdafa');if(d){const v=Math.round([...T,...(T.sb||[])].reduce((a,x)=>a+(x.spd||0)+(x.mp||0),0)*(d.val2||10)/100);u.hp+=v;u.max+=v}}
-   // 仗劍不屈：仗劍四弟子中第一個受到致命傷害時殘留十萬氣血（全隊限一次；需四人的不屈緣分全部啟動）
-   {const d=(u.sxl||[]).find(x=>x.skillType==='notDead'&&x.val1>=100000);if(d&&!T.ndg){const G=T.filter(x=>(x.sxl||[]).some(y=>y.skillType==='notDead'&&y.val1>=100000));/* 原版啟動條件：仗劍 4 弟子所有「不屈」緣分啟動（不屈意誌 MA8115） */if(G.length>=4&&G.every(x=>x.side||!S.heroes[x.h]||yfActive(x.h,'MA8115')))T.ndg={ids:G.map(x=>x.h),v:d.val1,used:0}}}
+   // 仗劍不屈：仗劍四弟子中第一個受到致命傷害時殘留十萬氣血（全隊限一次）。照原作：需在仗劍四弟子身上啟動 20 條指定緣分（20/20）；
+   // 本版推定（原作判定在伺服器）：條件達成後，陣上有幾位仗劍弟子都算，不要求四人同時上陣；敵方／電腦對手視為已達成
+   {const d=(u.sxl||[]).find(x=>x.skillType==='notDead'&&x.val1>=100000);if(d&&!T.ndg){const G=T.filter(x=>(x.sxl||[]).some(y=>y.skillType==='notDead'&&y.val1>=100000));if(G.length&&(u.side||bqNum()>=20))T.ndg={ids:G.map(x=>x.h),v:d.val1,used:0}}}
   }}
 }
 // 武學宗師（原作天賦說明「武學宗師：戰鬥時可提升所有弟子 N% 屬性」；6.0.0.80 公告：四位宗師放在小夥伴位置也能發揮；6.0.0.74 公告：替補也吃得到）
