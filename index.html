@@ -3169,9 +3169,9 @@ const canDrop=t=>!!(IM.eq[t]||IM.wx[t]||IM.fm[t]||IM.pc[t]||IM.fpc[t]||IM.it[t])
 let REP=null;
 // 本版自訂：宗師關卡每次勝利額外掉落（獨立判定，與原作關卡掉落並存；掃蕩同樣適用）
 //  一般（30%）：甲級裝備碎片 40%／甲級武功殘片 20%／甲級陣法殘片 20%／甲級弟子魂魄 20%（招募池內的甲級弟子）
-//  極低機率（各自獨立）：活動武功 0.15%、活動陣法 0.15%、活動裝備 0.2%、活動甲級弟子 0.05%
+//  極低機率（各自獨立）：活動武功 0.15%、活動陣法 0.15%、活動裝備 0.2%、活動甲級弟子 0.05%、四護法／武學宗師／仗劍兌換券各 0.02%～0.2%（越後面章節、頭目／首領關越高）
 //  「活動」＝本版甲級中沒有碎片可合成的武功／陣法／裝備，以及招募抽不到的甲級弟子（已擁有則轉為魂魄）
-const ZSR={c:.30,yb:.01,wx:.0015,fm:.0015,eq:.002,h:.0005};let ZSP=null;
+const ZSR={c:.30,yb:.01,wx:.0015,fm:.0015,eq:.002,h:.0005,tk:.0002};let ZSP=null;
 function zsPools(){if(ZSP)return ZSP;const eq=IM.eq,wx=IM.wx,fm=IM.fm,epc=IM.epc||{};const eqP=new Set(Object.values(epc).map(v=>v[0]));
  ZSP={epc:Object.keys(epc).filter(k=>eq[epc[k][0]]&&eq[epc[k][0]][2]===3),pc:Object.keys(IM.pc).filter(k=>wx[IM.pc[k][0]]&&wx[IM.pc[k][0]][1]===3),fpc:Object.keys(IM.fpc||{}).filter(k=>fm[IM.fpc[k][0]]&&fm[IM.fpc[k][0]][1]===3),
   soul:D.h.filter(h=>h.r===3&&h.st&&h.pw>0).map(h=>h.id),evEq:Object.keys(eq).filter(k=>eq[k][2]===3&&!eqP.has(k)),evWx:Object.keys(wx).filter(k=>wx[k][1]===3&&!(wx[k][8]||[]).length),
@@ -3180,12 +3180,14 @@ function zsPools(){if(ZSP)return ZSP;const eq=IM.eq,wx=IM.wx,fm=IM.fm,epc=IM.epc
 let GSP=null;function gsPools(){if(GSP)return GSP;const eq=IM.eq,wx=IM.wx,fm=IM.fm,epc=IM.epc||{};
  GSP={epc:Object.keys(epc).filter(k=>eq[epc[k][0]]&&eq[epc[k][0]][2]===2),pc:Object.keys(IM.pc).filter(k=>wx[IM.pc[k][0]]&&wx[IM.pc[k][0]][1]===2),fpc:Object.keys(IM.fpc||{}).filter(k=>fm[IM.fpc[k][0]]&&fm[IM.fpc[k][0]][1]===2),soul:D.h.filter(h=>h.r===2&&h.st&&h.pw>0).map(h=>h.id)};return GSP}
 function gsDrop(out){const P=gsPools();if(Math.random()>=ZSR.c)return;const q=Math.random();if(q<.4&&P.epc.length)giveDrop(pick(P.epc),1,out);else if(q<.6&&P.pc.length)giveDrop(pick(P.pc),1,out);else if(q<.8&&P.fpc.length)giveDrop(pick(P.fpc),1,out);else if(P.soul.length)addSoul(pick(P.soul),1,out)}
-function zsDrop(out){const P=zsPools(),r=Math.random;
+function zsDrop(out,pg,ty){const P=zsPools(),r=Math.random;
  if(r()<ZSR.c){const q=r();if(q<.4&&P.epc.length)giveDrop(pick(P.epc),1,out);else if(q<.6&&P.pc.length)giveDrop(pick(P.pc),1,out);else if(q<.8&&P.fpc.length)giveDrop(pick(P.fpc),1,out);else if(P.soul.length)addSoul(pick(P.soul),1,out)}
  if(r()<ZSR.wx&&P.evWx.length)giveDrop(pick(P.evWx),1,out);
  if(r()<ZSR.fm&&P.evFm.length)giveDrop(pick(P.evFm),1,out);
  if(r()<ZSR.eq&&P.evEq.length)giveDrop(pick(P.evEq),1,out);
- if(r()<ZSR.h&&P.evH.length)giveDrop(pick(P.evH),1,out)}
+ if(r()<ZSR.h&&P.evH.length)giveDrop(pick(P.evH),1,out);
+ /* 使用者指定：宗師關卡有機率掉落兌換券（四護法／武學宗師／仗劍，各自獨立判定），難度越高機率越高；機率為本版自訂：
+    第一章一般關 0.02%，越後面的章節越高（最後一章 0.1%）；頭目關 ×1.5、首領關 ×2（最後一章首領關 0.2%）；原則上以消費好禮（花元寶）取得為主，掉落只是偶爾的驚喜 */{const tk=ZSR.tk*(1+4*Math.max(0,Math.min(1,pg||0)))*(ty===2?2:ty===1?1.5:1);for(const t of CRTK)if(r()<tk&&IM.it[t])giveDrop(t,1,out)}}
 function ybRoll(lo,hi){const v=lo+(hi-lo)*Math.pow(Math.random(),2);return hi>=500?Math.round(v/10)*10:Math.round(v)}
 function reward(d,i,first){
  const x=LIST[d][i],L=CP.lv[x.li],out=[];DRL=[];
@@ -3201,7 +3203,7 @@ function reward(d,i,first){
    break}}}
  else for(const[t,ch]of L.sd||[])if(canDrop(t)&&Math.random()*100<ch)giveDrop(t,1,out);}
  if(d===0&&i===2&&first&&typeof ftOn==='function'&&ftOn()&&!S.eq.some(x=>IM.eq[x.t]&&IM.eq[x.t][1]==='weapon'))addEq('ED999',out);/* 原作新手教學：第 3 回（苗族少女，原作掉落鐵劍）必掉鐵劍 */
- if(d===2)zsDrop(out);else if(d===1)gsDrop(out);
+ if(d===2)zsDrop(out,(CP.ch.length>1?x.c/(CP.ch.length-1):1),L.ty||0);else if(d===1)gsDrop(out);
  // 使用者指定的元寶掉落（機率為本版自訂：極低＝0.2%、低＝0.5%，使用者要求狂刷約 3～5 天才能累積 3000 元寶；數量越多越稀有）：高手首領／頭目關 0.2% 掉 50～500；宗師首領／頭目關 0.5% 掉 500～3000；宗師一般關 0.2% 掉 5～100
  {/* 使用者指定：元寶掉落機率提高 50 倍（高手首領 10%、宗師首領 25%、宗師一般關 10%） */const yb=d===1&&L.ty>0?[.1,50,500]:d===2&&L.ty>0?[.25,500,3000]:d===2?[.1,5,100]:null;if(yb&&Math.random()<yb[0])giveDrop('IM002',ybRoll(yb[1],yb[2]),out)}
  // 原作：血書在副本掉落（不影響正常掉落）；機率 15% 為本版自訂
