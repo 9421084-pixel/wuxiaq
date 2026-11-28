@@ -647,10 +647,11 @@ let GROW=.2;
 const apct=(v,lv)=>(v||0)*100/(((lv||1)+25)*2)/100;let XK={d:1,c:1,m:1};const need=lv=>40*lv,upCost=o=>Math.round(40*Math.pow(o.lv,1.3)),qhCost=x=>{const E=IM.eq[x.t];return E[2]===0?Math.round(E[6]*Math.pow(x.lv,1.8)):E[6]*x.lv*x.lv},qhCap=()=>cfRow()[3];
 const PCT=['hp','ap','dp','dex','mp'],FLAT=['hr','dr','chr','crr','cm'],ANAME={hp:'氣血',ap:'武力',dp:'防禦',dex:'身法',mp:'內力',hr:'命中',dr:'閃避',chr:'暴擊',crr:'抗暴',cm:'會心',poji:'破擊',tuxi:'突襲',hunhou:'回春',podan:'破膽',huti:'護體',lianji:'連擊',xixue:'歸元',zhansha:'斬殺',jianding:'堅定',houjia:'混元',random:'無序',hard:'金剛'};
 const wxSlots=['wx','wx2','wx3','wx4'];
+/* 戰鬥中已上場的替補弟子（本版：替補上場後，主陣弟子與他的緣分即時開啟） */const SUBON=new Set();
 function yfActive(id,k){const Y=D.yf[k];if(!Y||!S.heroes[id])return false;const[n,ty,g]=Y,e=S.heroes[id].e||{};
- if(ty==='hero'){const zt=zwActive(),sb=!S.team.includes(id)&&subHas(id);return g.every(x=>S.team.includes(x)||zt.includes(x)||(sb&&x===id))}
+ if(ty==='hero'){const zt=zwActive(),sb=!S.team.includes(id)&&subHas(id);return g.every(x=>S.team.includes(x)||SUBON.has(x)||zt.includes(x)||(sb&&x===id))}
  // or_hero（原作資料有此類型、文字未收錄）：本人之外的其中一位同時上陣即可
- if(ty==='or_hero'){const zt=zwActive(),on=x=>S.team.includes(x)||zt.includes(x);return(on(id)||subHas(id))&&g.filter(x=>x!==id).some(on)}
+ if(ty==='or_hero'){const zt=zwActive(),on=x=>S.team.includes(x)||SUBON.has(x)||zt.includes(x);return(on(id)||subHas(id))&&g.filter(x=>x!==id).some(on)}
  if(ty==='equip')return SLOTS.some(([sl])=>{const x=e[sl]&&eqOf(e[sl]);return x&&g.includes(x.t)});
  if(ty==='skill')return g.includes(HM[id].sid)||wxSlots.some(w=>e[w]&&g.includes(e[w]));
  if(ty==='own_hero')return g.every(x=>S.heroes[x]);
@@ -3019,7 +3020,8 @@ const FMV={"FA000":[334,267],"FA001":[334,267],"FA002":[334,267],"FA003":[334,26
 const FPCT=['hp','ap','dp','dex','mp'],fmTxt=(fid,p,lv)=>{const F=IM.fm[fid],ty=F[3][p][0],v=fmVal(fid,p,lv);return`${ANAME[ty]||({hard:'韌性'}[ty])||ty} +${FPCT.includes(ty)||v<1?Math.round(v*100)+'%':Math.round(v)}`};
 const icStyle60=h=>{const m=HM[h],k=m?m.ic:-1;if(k<0)return'';return`background-size:960px auto;background-position:${-(k%16)*60}px ${-Math.floor(k/16)*60}px`};
 function applyFm(u,fid,lv){if(!fid||!IM.fm[fid])return u;const ty=IM.fm[fid][3][u.row][0],v=fmVal(fid,u.row,lv),key={ap:'atk',dex:'spd'}[ty]||ty;
- if(['hp','ap','dp','dex','mp'].includes(ty))u[key]=Math.round(u[key]*(1+v));else if(['hr','dr','chr','crr','cm'].includes(ty))u[ty]=(u[ty]||0)+(v<1?v*100:v);return u}
+ if(['hp','ap','dp','dex','mp'].includes(ty))u[key]=Math.round(u[key]*(1+v));else if(['hr','dr','chr','crr','cm'].includes(ty))u[ty]=(u[ty]||0)+(v<1?v*100:v);
+ /* 修正：金剛、無序、護體、破膽、斬殺等巔峰類屬性之前沒有加上，現在照數值加到巔峰屬性 */else if(SUA.includes(ty)){u.su={...(u.su||{})};u.su[ty]=(u.su[ty]||0)+v}return u}
 // 原作佈陣：md.slots[1..7] 依格子位置存放（可留空格）。本版 S.tpos={弟子:格子 0～6}（0＝陣首、1～3＝陣中、4～6＝陣尾），S.team 依格子順序排列
 function tposFix(){if(!S||!S.team)return;S.tpos=S.tpos||{};const T=S.tpos;S.team=[...new Set(S.team.filter(id=>S.heroes[id]))];for(const k in T)if(!S.team.includes(k))delete T[k];
  const used=new Set();for(const id of S.team){const v=T[id];if(v==null||v<0||v>6||used.has(v))delete T[id];else used.add(v)}
@@ -3069,6 +3071,7 @@ function wzApply(A,E,opt){const mine=A.length&&A.every(u=>u.side===0&&S.heroes[u
  for(const[L,B,my]of[[A,(opt&&opt.subA)||[],mine],[E,(opt&&opt.subE)||[],0]]){const ss=wzSids([...L,...B],my);for(const sid of ss){const[k,v]=WZ[sid];for(const u of[...L,...B]){const d=Math.round((u[k]||0)*v);u[k]=(u[k]||0)+d;if(k==='hp')u.max=u.hp}r.push([L===A?0:1,sid])}}
  return r}
 function sim(li,E0,A0,opt){
+ SUBON.clear();
  const A=(A0||myTeam()).slice(),E=E0||foes(li),AR=A.slice();
  // 替補：只有自己門派的上陣陣容才會帶替補（opt.nosub 可關閉）
  const SB=(!(opt&&opt.nosub)&&A.length&&A.every(u=>u.side===0&&S.heroes[u.h]&&S.team.includes(u.h)))?subUnits():[];A.sb=SB;A.sbp=new Set(SB.map(x=>x.subp));
@@ -3100,8 +3103,9 @@ function sim(li,E0,A0,opt){
  const hurt=(h,u)=>{const t=h.t;if(h.dmg>=t.hp&&t.hp>0){const nd=t.nd||(sxOf(t,'notDead1')?{v:sxOf(t,'notDead1').val1}:null);if(nd&&!t.ndu){t.ndu=1;const keep=Math.max(1,nd.v);/* 但求一敗照原版：固定殘留五十萬氣血 */h.dmg=Math.max(0,t.hp-keep);h.tg=h.tg||[];h.tg.push([nd.n==='三屍腦神丹'?'神丹':'不屈',t])}else{const tm=t.side?E:A;const g=tm.ndg;if(g&&!g.used&&g.ids.includes(t.h)){g.used=1;const keep=Math.max(1,g.v);h.dmg=Math.max(0,t.hp-keep);h.tg=h.tg||[];h.tg.push(['不屈',t])}}}t.hp=Math.max(0,t.hp-h.dmg);if(t.hp<=0&&u){const ts=sxOf(t,'tongsi');if(ts&&u.hp>0){const v=Math.min(u.hp,Math.round(u.max*ts.val1/100));u.hp-=v;(h.ex||(h.ex=[])).push({t:u,v:-v,tag:''})}const sd=sxOf(u,'shadi');if(sd&&sd.param1){u.chr=(u.chr||0)+(+sd.val1||0);u.su.podan=(u.su.podan||0)+(+sd.val2||0);u.adr=(u.adr||0)+(+sd.val3||0);(h.ex||(h.ex=[])).push({t:u,v:0,tag:'傲世天下'})}}};
  const sxHit=(u,h,isSk)=>{if(h.miss||!h.dmg)return;const t=h.t;for(const d of u.sxl)if(d.skillType==='debuff'&&(isSk?d.val1==='all':d.val1==='main'||d.val1==='all')){/* 花毒（原廠 6.0.6.4 版公告）：普攻命中降防，連擊可疊加，最多疊加兩次 */if(d.val1==='main'){t.dbs=t.dbs||{};const k=u.i+':'+d.param2;if((t.dbs[k]||0)>=2)continue;t.dbs[k]=(t.dbs[k]||0)+1}if(d.param2==='random'){if(t.su.random)t.su.random*=Math.max(0,1-d.val2/100)}for(const[a,v]of[[d.param2,d.val2],[d.param3,d.val3]]){const kk={ap:'atk',dex:'spd'}[a]||a;if(v&&typeof t[kk]==='number'&&a!=='random')t[kk]=Math.round(t[kk]*(1-v/100))}}};
  // 替補上場：倒下弟子的陣位有替補就換上（還沒出手的照原順序出手；已出手的本回合不出手）
+ /* 替補上場：把替補算進陣上，重算陣上我方弟子（含替補本人）的緣分加成，差額直接加到目前屬性（本版自訂；原作在伺服器計算） */const subYf=s=>{if(!S.heroes[s.h])return;const L=A.filter(x=>x.hp>0&&!x.bench&&x.side===0&&S.heroes[x.h]);L.push(s);const o1=L.map(x=>hst(x.h));SUBON.add(s.h);L.forEach((x,i)=>{const o2=hst(x.h),a=o1[i];for(const k in o2){if(k==='su'){for(const q in o2.su){const d=(o2.su[q]||0)-((a.su||{})[q]||0);if(d)x.su[q]=(x.su[q]||0)+d}continue}if(typeof o2[k]!=='number'||typeof a[k]!=='number')continue;const d=o2[k]-a[k];if(!d)continue;if(k==='hp'){x.max+=d;x.hp=Math.max(1,x.hp+d)}else x[k]=(x[k]||0)+d}})};
  const subIn=(order,oi,r)=>{if(SBE.length)for(let k=0;k<E.length;k++){const d=E[k];if(d.hp>0||d.subd)continue;const s2=SBE.find(x=>x.bench);if(!s2)break;d.subd=1;s2.bench=0;s2.pos=d.pos;s2.row=d.row;s2.sl=d.sl;s2.max=s2.hp;E[k]=s2;if(order){const di=order.indexOf(d);if(di>=oi)order[di]=s2}steps.push({k:'sub',u:s2,out:d,np:U.map(x=>x.np),r})}
-  if(!SB.length)return;for(let k=0;k<A.length;k++){const d=A[k];if(d.hp>0||d.subd)continue;const s=SB.find(x=>x.bench&&x.subp===d.pos);if(!s)continue;d.subd=1;s.bench=0;s.pos=d.pos;s.row=d.row;s.sl=d.sl;unitFit(s);s.max=s.hp;A[k]=s;
+  if(!SB.length)return;for(let k=0;k<A.length;k++){const d=A[k];if(d.hp>0||d.subd)continue;const s=SB.find(x=>x.bench&&x.subp===d.pos);if(!s)continue;d.subd=1;s.bench=0;s.pos=d.pos;s.row=d.row;s.sl=d.sl;unitFit(s);s.max=s.hp;A[k]=s;subYf(s);
    if(order){const di=order.indexOf(d);if(di>=oi)order[di]=s}steps.push({k:'sub',u:s,out:d,np:U.map(x=>x.np),r})}};
  for(let r=0;r<(opt&&opt.maxR||5);r++){
   const order=U.filter(u=>u.hp>0&&!u.bench).sort((a,b)=>b.spd-a.spd);
@@ -3167,6 +3171,7 @@ function sim(li,E0,A0,opt){
  // 決戰（原作 NewNeiliScene：五回合內未分勝負，雙方存活弟子比拚內力；戰報 neili＝[內力, 氣血]，內力先耗、再耗氣血，總量先耗盡者敗）
  // 本版自訂：內力＝存活弟子內力屬性總和、氣血＝存活弟子剩餘氣血總和（原作由伺服器計算，未公開公式）；兩邊相等時算進攻方落敗
  let nl=null;if(!win&&!(opt&&opt.survive)&&A.some(x=>x.hp>0)&&E.some(x=>x.hp>0)){const sum=L=>{const al=L.filter(x=>x.hp>0);return{h:al,v:[Math.round(al.reduce((a,x)=>a+(x.mp||0),0)),Math.round(al.reduce((a,x)=>a+x.hp,0))]}};const l=sum(A),r=sum(E);win=l.v[0]+l.v[1]>r.v[0]+r.v[1];nl={A:l.h,E:r.h,nA:l.v,nE:r.v,win}}
+ SUBON.clear();
  return{A:AR,E:SBE.length?ER:E,SB:SBE.length?[...SB,...SBE]:SB,steps,win,nl,xv:XVT,op:opList(A,E,XVT,WZR,XVE),sv:A.filter(x=>x.hp>0).length}
 }
 function gradeHero(lo,hi){return wpick(GR.indexOf(lo),GR.indexOf(hi))}
