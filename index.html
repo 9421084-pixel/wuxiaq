@@ -620,7 +620,7 @@ function xjAfter(){const R=document.getElementById('xjtp');if(!R||!XJV)return;co
   ['ccb1','ccb2','ccb3'].forEach(k=>{const c=qn(R,k);if(c)c.style.display='none'});slots.forEach(([k,lx],i)=>{const c=qn(R,k);if(!c)return;c.style.display='';c.style.left=lx+'px';const[it,n]=L[i],have=S.items[it]||0;
    qtx(c,'txtName',IM.it[it]?IM.it[it][0]:it);qtx(c,'txtCount',`數量:${have}/${n}`);{const e=qn(c,'txtCount');if(e)e.style.color=have<n?'#ff2a2a':''}
    const f=c.querySelector('[data-im="fix_a_bg_buzhen_00"]')||c.querySelector('i.qa');if(f&&IM.it[it]){const ic=qAdd(f.parentElement,itIco(IM.it[it][4],86),qBox(f,15));ic.style.pointerEvents='auto';ic.style.cursor='pointer';ic.onclick=()=>itemTip(it)}});
-  pe2(qn(R,'btnTp')).onclick=()=>xjDo(t)}
+  pe2(qn(R,'btnTp')).onclick=()=>xjDo(t);/* 修正：版面下方的「進階」按鈕名稱是 btnTpLevel（與上方分頁同名），原本沒綁到，按了沒反應 */R.querySelectorAll('[data-n="btnTpLevel"]').forEach(e=>{if(parseFloat(e.style.top)>300){pe2(e).onclick=()=>xjDo(t);if(full)e.style.display='none'}})}
  bmApply(R);layoutScl()}
 // 原作 SkillWashView（UI_langyayudong/langya_xinfa_ui＋langya_xinfaxilian_node）：靈石仙泉洗類型＋數值、萬載寒泉只洗數值
 const XJWI=[['ID979','會洗練所有效果','使用靈石仙泉會洗練心法自由屬性的類型和數值,是否繼續？'],['ID980','只洗練屬性數值','使用萬載寒泉只洗練心法的自由屬性數值,是否繼續？']];
