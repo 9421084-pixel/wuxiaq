@@ -5043,6 +5043,15 @@ function openRename(){if(!QY){qyLoad().then(openRename);return}
    if(/[()（）.%+\-*?\[\]^$<>{}~!#&_=|\s,，。、:：;；'"`@\\/]/.test(v)){toast('門派名不可含符號或空白');return}if(v===S.sect){toast('名稱沒有變更');return}
    if(!(S.items.ID008>0)){toast('沒有更名令');return}S.items.ID008--;S.sect=v;save();close();toast(`門派已更名為「${v}」`);render()};
   setTimeout(()=>inp.focus(),50)})}
+// 兌換碼（本版自訂）：每個兌換碼每份存檔限用一次，紀錄在 S.cdk
+const CDK={'NIEHUO2026':{n:'涅火復生陣',g:[['FA036',1]]}};
+function openCdk(){if(!QY){qyLoad().then(openCdk);return}
+ qyPop('gm',(R,close)=>{const fld=qAdd(R,'<input class="gmin" maxlength="20" autocomplete="off" placeholder="請輸入兌換碼">',{l:300,t:296,w:322,h:40});const inp=fld.querySelector('input');fld.style.pointerEvents='auto';inp.style.pointerEvents='auto';
+  qtx(R,'str_ui_155','每個兌換碼限用一次');qtx(R,'str_ui_156','請掌門輸入兌換碼');qtx(R,'str_ui_153','兌換碼');qhide(R,'btnRandom');R.querySelectorAll('[data-im="art_font_btn_suiji"]').forEach(e=>e.style.display='none');{const e=R.querySelector('[data-im="art_font_mingpaigengming"]');if(e){const t=document.createElement('div');t.className=e.className;t.style.cssText=e.style.cssText;t.style.position='absolute';Object.assign(t.style,{background:'none',display:'flex',alignItems:'center',justifyContent:'center',width:'auto',minWidth:e.style.width});t.innerHTML=gtImg('兌換碼',300,null,26);e.parentNode.insertBefore(t,e);e.style.display='none'}}
+  qn(R,'btnCancel').onclick=close;
+  qn(R,'btnOk').onclick=()=>{const v=inp.value.trim().toUpperCase();if(!v){toast('請輸入兌換碼');return}const c=CDK[v];if(!c){toast('兌換碼錯誤');return}
+   S.cdk=S.cdk||{};if(S.cdk[v]){toast('這個兌換碼已經使用過了');return}S.cdk[v]=Date.now();const o=[];c.g.forEach(([x,n])=>giveDrop(x,n,o));save();close();toast(`兌換成功，獲得${o.join('、')}`);render()};
+  setTimeout(()=>inp.focus(),50)})}
 // ---------- 論劍（原作 LunJianView／arena：排名挑戰、每日 5 次、間隔 25 秒、名次每 10 分鐘給聲望、每日排名獎勵、論劍等級與爭霸獎勵）----------
 const LJN=5001;let LJSC=null;
 function ljS(){const l=S.lj||(S.lj={rank:LJN,best:LJN,exp:0,win:0,lose:0,day:'',used:0,last:0,tick:Date.now(),claim:'',zb:{},log:[]});if(l.day!==DAY()){if(l.day&&QY&&l.rank<LJN&&l.claim!==l.day&&(l.win+l.lose)){const R=ljRB(l.rank)[3],g=[];/* 排名獎勵表裡的每一項都要發（之前只發銀兩與 IB006，寶箱、元神沒發） */for(const k in R){const v=R[k];if(!v)continue;if(k==='IM001'){S.silver+=v;g.push(`${v}銀兩`)}else if(k==='IM003'){try{bbS().ys=(bbS().ys||0)+v;g.push(`元神×${v}`)}catch(e){}}else if(IM.it[k]||k==='IM002'||k==='IM004'){const o=[];giveDrop(k,v,o);g.push(...o)}}l.claim=l.day;const rk=l.rank;setTimeout(()=>toast(`論劍排名獎勵：昨日第 ${rk} 名，獲得${g.join('、')}`),400)}l.day=DAY();l.used=0}return l}
@@ -7817,6 +7826,7 @@ function openSettings(){if(!QY){qyLoad().then(openSettings).catch(()=>openSettin
   /* 原版 QQ 群按鈕的位置改為「跳過片頭動畫」勾選（使用者指定）；勾選框照音樂、音效按鈕的樣式 */{const bx=qAdd(R,'',{l:182,t:511,w:65,h:66}),tk=qAdd(R,'',{l:182,t:511,w:65,h:66});qIm(bx,'fix_a_bg_buzhen_xuanzekuang');qIm(tk,'fix_a_bg_buzhen_duigou');const st=()=>{tk.style.display=opSkip()?'':'none';gm.opa=opSeen()?'1':'.6'};st();on('btnQQ',()=>{if(!opSeen()){toast('第一次玩要先看完片頭動畫，之後才能勾選跳過');return}opSetSkip(!opSkip());st();toast(opSkip()?'已勾選：之後新開門派會跳過片頭動畫':'已取消：之後新開門派會播放片頭動畫')})}
   
   on('btnCdkey',()=>{if(!ftOn()||!ftCanSkip()){saveExport();return}ftSkip();upd()});
+  /* 兌換碼（本版自訂：原版兌換碼按鈕的位置已改為匯出存檔，這裡在標題列右側另放一顆，樣式仿「重置帳號」） */{const cb=qAdd(R,'<button style="width:100%;height:100%;border:2px solid #d9a85a;border-radius:7px;background:radial-gradient(ellipse at 50% 35%,#f07a40,#b3321a 70%,#7a1c0c);box-shadow:inset 0 0 0 2px #5a1608;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">'+gtImg('兌換碼',300,null,27)+'</button>',{l:752,t:6,w:132,h:62});cb.style.pointerEvents='auto';cb.querySelector('button').onclick=()=>{close();openCdk()}}
   on('btnReset',()=>{askYes('確定清除全部進度，重新開始？').then(ok=>{if(!ok)return;ftMarkReset();try{localStorage.removeItem(KEY)}catch(e){}IDB.del();S=load();last=null;tab=0;close();render()})});
   bmApply(R)})}
 function openSettings0(){const ov=document.createElement('div');ov.className='hiov';ov.innerHTML=`<div class="hibox sm"><div class="hin">設置</div><img class="hijs" src="a/ui/hi/fix_bg_tip_jinshutiao.png" alt=""><div class="hset">${window.__NOIMP?'':'<button data-s="gm">匯入進度（開發用）</button>'}<button data-s="spd">戰鬥速度：${SPD>1?'加速 ×'+SPD:'正常'}</button>${ftOn()&&ftCanSkip()?'<button data-s="ft">關閉新手教學</button>':''}<button data-s="rs" class="dang">重新開始（清除存檔）</button></div><button class="hiclose" data-hiclose="1"><img src="a/ui/hi/art_font_guanbi.png" alt="關閉"></button></div>`;document.body.appendChild(ov);bmApply(ov);
