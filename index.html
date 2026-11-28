@@ -8223,11 +8223,16 @@ Promise.all([fetch('a/data.json?v=13').then(r=>r.json()),fetch('a/camp.json?v=8'
  // 掌門要求的一次性贈送：熱門俠女兌換券各 1 張（兌換券在背包使用，或到俠女商店兌換）
  if(S.sect&&!S.gxv1){S.gxv1=1;for(const it of XVGIFT)if(IM.it[it])S.items[it]=(S.items[it]||0)+1;save();setTimeout(()=>toast('已贈送熱門俠女兌換券：'+XVGIFT.filter(it=>IM.it[it]).map(it=>IM.it[it][0]).join('、')),1500)}
  /* 掌門要求的一次性贈送：初入江湖自選箱 ×1 */if(S.sect&&!S.gib959){S.gib959=1;if(IM.it.IB959){S.items.IB959=(S.items.IB959||0)+1;save();setTimeout(()=>toast('已贈送初入江湖自選箱×1，請到行囊使用'),2200)}}
- /* 掌門要求的一次性贈送（測試用）：龍.峰、龍.譽、龍.竹各 120 級，穿上全套緣分裝備、裝上緣分武學 */if(S.sect&&!S.glong3){S.glong3=1;const G={HA395:[['EA997','EA998','EA999','EA1000','EA1001'],['SA667','SA666']],HA396:[['EA9961','EA9962','EA9963','EA9964','EA9965'],['SA526','SA002']],HA397:[['EA9971','EA9972','EA9973','EA9974','EA9975'],['SA501','SA001']]};
-  for(const h in G){if(!HM[h])continue;const o=S.heroes[h]||(S.heroes[h]={lv:1,exp:0,tp:0});o.lv=Math.max(o.lv||1,120);o.e=o.e||{};const[eqs,wxs]=G[h];
-   for(const t of eqs){if(!IM.eq[t])continue;addEq(t,[]);const x=S.eq[S.eq.length-1];o.e[IM.eq[t][1]]=x.u}
-   wxs.forEach((t,i)=>{if(!IM.wx[t])return;const w=S.wx[t]||(S.wx[t]={lv:1,n:0});w.n=(parseInt(w.n,10)||0)+1;for(const sl of wxSlots)if(o.e[sl]===t)delete o.e[sl];o.e[wxSlots[i]]=t})}
-  save();setTimeout(()=>toast('已贈送測試用弟子：龍.峰、龍.譽、龍.竹（120 級，已穿上緣分裝備、裝上武學），請到佈陣安排上陣'),2600)}
+ /* 測試用的龍系列三兄弟贈送已移除（會送給每一個存檔） */
+ /* 回收：之前誤送的測試用龍系列三兄弟（120 級＋全套緣分裝備＋武學），收到過的存檔一次性收回 */if(S.sect&&S.glong3&&!S.glong3r){S.glong3r=1;const G={HA395:[['EA997','EA998','EA999','EA1000','EA1001'],['SA667','SA666']],HA396:[['EA9961','EA9962','EA9963','EA9964','EA9965'],['SA526','SA002']],HA397:[['EA9971','EA9972','EA9973','EA9974','EA9975'],['SA501','SA001']]};let n=0;
+  for(const h in G){const o=S.heroes[h];if(!o)continue;const[eqs,wxs]=G[h];
+   for(const t of eqs){const u=o.e&&o.e[IM.eq[t]?IM.eq[t][1]:''];const k=S.eq.findIndex(x=>x.u===u&&x.t===t);if(k>=0)S.eq.splice(k,1)}
+   for(const t of wxs){const w=S.wx[t];if(w){w.n=Math.max(0,(parseInt(w.n,10)||0)-1);if(w.n<=0)delete S.wx[t]}}
+   /* 只收回系統送的：仍是贈送時的狀態（120 級、沒有經驗、沒有覺醒／突破）才把弟子本身收回；自己有練過的弟子保留，只收回送的裝備與武學 */if(!(o.lv===120&&!o.exp&&!o.tp&&!o.awk&&!o.awp&&!(o.bg&&o.bg.s>1))){for(const t of eqs){const sl=IM.eq[t]&&IM.eq[t][1];if(o.e&&o.e[sl]!=null&&!S.eq.some(x=>x.u===o.e[sl]))delete o.e[sl]}for(const sl of wxSlots)if(o.e&&o.e[sl]&&!S.wx[o.e[sl]])delete o.e[sl];n++;continue}
+   delete S.heroes[h];n++;S.team=(S.team||[]).filter(x=>x!==h);if(S.tpos)delete S.tpos[h];if(S.sub&&S.sub.s)for(const q in S.sub.s)if(S.sub.s[q]===h)delete S.sub.s[q];(S.zw||[]).forEach(z=>{if(z&&z.u===h)z.u=null})}
+  /* 其他弟子身上若裝了已被收回的武學，一併卸下 */for(const id in S.heroes){const e=S.heroes[id].e;if(!e)continue;for(const w of wxSlots)if(e[w]&&!S.wx[e[w]])delete e[w]}
+  if(!S.team.length){const best=Object.keys(S.heroes).sort((x,y)=>(S.heroes[y].lv||0)-(S.heroes[x].lv||0))[0];if(best){S.team=[best];S.tpos={[best]:0}}}
+  if(n){save();setTimeout(()=>toast('之前系統誤送的測試用龍系列弟子（龍.峰、龍.譽、龍.竹）與贈送的裝備、武學已收回'),2600)}}
  render();
 }).catch(e=>{console.error(e);document.getElementById('app').innerHTML='<p class="lose">資料載入失敗，請重新整理頁面。</p>'});
 qyLoad().then(()=>{try{if(tab===0&&MAPV&&!busy)render()}catch(e){}}).catch(()=>{});
