@@ -6851,7 +6851,7 @@ function wgAfter(){const TY=['心法','輕功','外功','內功'],GL='DCBA';
   ['mcEquip','mcChange','mcNotEnoughZhenqi'].forEach(k=>qhide(c,k));
   const fr=c.querySelector('[data-im="fix_a_bg_buzhen_00"]');if(fr){const b=qBox(fr);qAdd(c,`<span class="wgic">${icn(W[7],1)}</span>`,{l:b.l+15,t:b.t+15,w:86,h:86});c.appendChild(c.querySelector('[data-im="fix_a_qee"]'));c.appendChild(qn(c,'txtType'))}
   if(WGPK){const P=WGPK,he=S.heroes[P.id].e||{},on=he[P.sl]===t,bt=qn(c,'btnAction'),ar=qn(c,on?'mcChange':'mcEquip');qhide(c,'mcUpgrade');if(ar){ar.style.display='';if(on)qIm(ar,'art_font_btn_xiexia')}if(bt){bt.style.pointerEvents='auto';bt.style.cursor='pointer';bt.dataset.wgpk=t;if(ar)c.appendChild(ar);bt.onclick=()=>{const o2=S.heroes[P.id];o2.e=o2.e||{};if(on)delete o2.e[P.sl];else o2.e[P.sl]=t;WGPK=null;WGC=-1;save();tab=1;HSEL=P.id;DTAB='xq';render();toast(on?'已卸下':'裝備成功')}}const mg=c.querySelector('[data-im="btn_fangdajing_up"]');return}
-  const bt=qn(c,'btnAction');if(bt){const lim=o.lv>=WGMAX||max;bt.style.pointerEvents='auto';bt.style.cursor='pointer';if(lim)bt.style.filter='grayscale(1)';bt.onclick=()=>{if(lim){toast(max?'武功已達最大級別':'已達升級上限！');return}WGUP={t,c:[],r:null};render()};const up=qn(c,'mcUpgrade');if(up)c.appendChild(up)}
+  const bt=qn(c,'btnAction');if(bt){const lim=o.lv>=WGMAX||max;bt.style.pointerEvents='auto';bt.style.cursor='pointer';if(lim)bt.style.filter='grayscale(1)';bt.onclick=()=>{if(lim){if(xjOn(t)){XJV={t};render();return}/* 滿級心法改開進階頁（原本升級頁才有進階分頁，滿級時進不去） */toast(max?'武功已達最大級別':'已達升級上限！');return}WGUP={t,c:[],r:null};render()};const up=qn(c,'mcUpgrade');if(up)c.appendChild(up)}
   const mg=c.querySelector('[data-im="btn_fangdajing_up"]');if(mg){const b=qBox(mg);qAdd(c,`<button class="wgmg" data-wgi="${t}" aria-label="說明"></button>`,b)}
   });
 
@@ -6910,7 +6910,7 @@ function wxTip(t,h,cu,view){const K=D.sk[t]||{},W=h?[K.n,HM[h].r||0,K.buff?'buff
    for(const k in BAR){const e=qn(R,BAR[k]),on=k===a[0]||(b2&&k===b2[0]);qshow(R,BAR[k],on);if(!on||!e)continue;const p=(k===a[0]?a[1]:b2[1])*10;e.style.clipPath=k===a[0]?`inset(0 ${100-p}% 0 0)`:`inset(0 0 0 ${100-p}%)`}
    for(const k in LB){const e=qn(R,LB[k]),on=k===a[0]||(b2&&k===b2[0]);qshow(R,LB[k],on);if(on&&e){const P=k===a[0]?PL:PR;e.style.left=P[0];e.style.top=P[1]}}}
   pe2(qn(R,'btnClose')).onclick=close;
-  const up=()=>{if(o.lv>=WGMAX||o.lv>=W[5]){toast(o.lv>=W[5]?'武功已達最大級別':'已達升級上限！');return}close();WGUP=h?{t,h,c:[],r:null}:{t,c:[],r:null};render();if(h)window.scrollTo(0,0)};pe2(qn(R,'btnMid')).onclick=view?close:up;pe2(qn(R,'btnRight')).onclick=up;if(cu)pe2(qn(R,'btnLeft')).onclick=()=>{close();wgPick(cu.id,cu.sl)};
+  const up=()=>{if(o.lv>=WGMAX||o.lv>=W[5]){if(!h&&xjOn(t)){close();WGUP=null;XJV={t};render();return}toast(o.lv>=W[5]?'武功已達最大級別':'已達升級上限！');return}close();WGUP=h?{t,h,c:[],r:null}:{t,c:[],r:null};render();if(h)window.scrollTo(0,0)};pe2(qn(R,'btnMid')).onclick=view?close:up;pe2(qn(R,'btnRight')).onclick=up;if(cu)pe2(qn(R,'btnLeft')).onclick=()=>{close();wgPick(cu.id,cu.sl)};
   bmApply(R)})}
 function bagView(){if(QY)return bagView2();return bagView0()}
 // ---------- 武功升級（原作 SkillUpgradeView：UI_wugong/a_wugong_lvup_uia）----------
